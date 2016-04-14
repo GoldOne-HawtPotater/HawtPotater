@@ -1,4 +1,4 @@
-
+// The game engine code.
 window.requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
