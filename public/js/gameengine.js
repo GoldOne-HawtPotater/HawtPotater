@@ -19,14 +19,16 @@ function GameEngine() {
     this.wheel = null;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
+    this.player_num = null;
 }
 
-GameEngine.prototype.init = function (ctx, gw) {
+GameEngine.prototype.init = function (ctx, gw, player_num) {
     this.ctx = ctx;
     this.gameworld = gw;
     this.surfaceWidth = this.ctx.canvas.width;
     this.surfaceHeight = this.ctx.canvas.height;
     this.startInput();
+    this.player_num = player_num;
 
     console.log('game initialized');
 }
@@ -77,8 +79,8 @@ GameEngine.prototype.startInput = function () {
        var key = e.which;
        switch(key) {
             case 37: //left
-                socket.emit('player_update', player_num);
-                gameworld.move(player_num);
+                socket.emit('player_update', that.player_num);
+                that.gameworld.move(that.player_num);
                 break;
             case 38: //up
                 socket.emit('player_update', player_num);

@@ -1,4 +1,7 @@
 
+    // connect to the socket
+    var socket = io();
+
 $(function(){
     // Create an asset manager.
     var ASSET_MANAGER = new AssetManager();
@@ -6,8 +9,6 @@ $(function(){
     // Create the gameworld.
     var gameworld = new GameWorld();
 
-    // connect to the socket
-    var socket = io();
 
     // Get the game field (I think this is the canvas?)
     var field = document.getElementById("field");
@@ -86,7 +87,8 @@ $(function(){
     ASSET_MANAGER.queueDownload("../img/unnamed.jpg");
 
     ASSET_MANAGER.downloadAll(function () {
-        gameEngine.init(ctx, gameworld);
+        console.log("From asset manager: " + player_num);
+        gameEngine.init(ctx, gameworld, player_num);
         gameEngine.start();
     });
 });
