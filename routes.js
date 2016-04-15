@@ -134,11 +134,16 @@ module.exports = function(app,io){
 		});
 
 		/** Update the game with player interactions **/
-		socket.on('player_update', function(data) {
+		socket.on('update_clients', function(data) {
+			console.log('Updating everyone else.');
+			socket.broadcast.to(socket.room).emit('receive_player_update', data);
+		});
+
+		socket.on('update_gameworld', function(data) {
 			console.log('Updating server.');
 			gameworlds[socket.room].callFunc(data);
 			console.log('Updating everyone else.');
-			socket.broadcast.to(socket.room).emit('receive_player_update', data);
+			socket.broadcast.to(socket.room).emit('receive_gameworld_update', data);
 		});
 	});
 };

@@ -90,11 +90,11 @@ GameEngine.prototype.startInput = function () {
             case 39: //right
             case 40: //down
                 var data = {
-                    theFunc: that.gameworld.move,
+                    theFunc: 'move',
                     playerId: that.playerId,
                     direction: key
                 };
-                socket.emit('player_update', data);
+                socket.emit('update_gameworld', data);
                 that.gameworld.move(data);
                 break;
             case 13: // {ENTER}

@@ -52,7 +52,7 @@ $(function(){
                 };
 
                 socket.emit('login', sendData);
-                socket.emit('player_update', sendData);
+                socket.emit('update_clients', sendData);
                 gameEngine.addPlayer(sendData);
                 // gameEngine.gameworld.addPlayer(sendData);
             });
@@ -91,10 +91,18 @@ $(function(){
 
     socket.on('receive_player_update', function(data){
         if(data && data.theFunc) {
-            console.log('Calling the function.');
-            gameEngine.gameworld.callFunc(data);
+            gameEngine[data.theFunc](data);
         } else {
-            console.log('Receive Player Update failed. Data is null.');
+            console.log('receive_player_update failed. Data is null.');
+            console.log(data);
+        }
+    });
+
+    socket.on('receive_gameworld_update', function(data){
+        if(data && data.theFunc) {
+            gameEngine.gameworld[data.theFunc](data);
+        } else {
+            console.log('receive_gameworld_update failed. Data is null.');
             console.log(data);
         }
     });
