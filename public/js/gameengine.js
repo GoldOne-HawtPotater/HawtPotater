@@ -12,6 +12,7 @@ window.requestAnimFrame = (function () {
 
 function GameEngine() {
     this.entities = [];
+    this.players = [];
     this.ctx = null;
     this.gameworld = null;
     this.click = null;
@@ -19,27 +20,33 @@ function GameEngine() {
     this.wheel = null;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
-    this.player_num = null;
+    this.playerId = null;
+    this.gameIsPlaying = null;
 }
 
-GameEngine.prototype.init = function (ctx, gw, player_num) {
+GameEngine.prototype.init = function (ctx, gw, playerId) {
     this.ctx = ctx;
     this.gameworld = gw;
     this.surfaceWidth = this.ctx.canvas.width;
     this.surfaceHeight = this.ctx.canvas.height;
     this.startInput();
-    this.player_num = player_num;
+    this.playerId = playerId;
+    this.gameIsPlaying = false;
 
-    console.log('game initialized');
+    console.log('game engine initialized');
 }
 
 GameEngine.prototype.start = function () {
-    console.log("starting game");
+    console.log("start the game engine loop");
     var that = this;
     (function gameLoop() {
         that.loop();
         requestAnimFrame(gameLoop, that.ctx.canvas);
     })();
+}
+
+GameEngine.prototype.startTheGame = function() {
+    this.gameIsPlaying = true;
 }
 
 GameEngine.prototype.startInput = function () {
@@ -79,20 +86,19 @@ GameEngine.prototype.startInput = function () {
        var key = e.which;
        switch(key) {
             case 37: //left
-                socket.emit('player_update', that.player_num);
-                that.gameworld.move(that.player_num);
-                break;
             case 38: //up
-                socket.emit('player_update', player_num);
-                gameworld.move(player_num);
-                break;
             case 39: //right
-                socket.emit('player_update', player_num);
-                gameworld.move(player_num);
-                break;
             case 40: //down
-                socket.emit('player_update', player_num);
-                gameworld.move(player_num);
+                var data = {
+                    theFunc: that.gameworld.move,
+                    playerId: that.playerId,
+                    direction: key
+                };
+                socket.emit('player_update', data);
+                that.gameworld.move(data);
+                break;
+            case 13: // {ENTER}
+                gameworld.toggleReady(that.playerId);
                 break;
        }
     });
@@ -117,6 +123,16 @@ GameEngine.prototype.startInput = function () {
 GameEngine.prototype.addEntity = function (entity) {
     console.log('added entity');
     this.entities.push(entity);
+}
+
+GameEngine.prototype.addPlayer = function (data) {
+    this.players[data.playerId] = new Entity(this, 50, 50, data.playerId);
+    console.log('Player ' + data.playerId + ' has been added.');
+}
+
+GameEngine.prototype.removePlayer = function (data) {
+    this.players.pop(data.playerId);
+    console.log('Player ' + data.playerId + ' has been removed.');
 }
 
 GameEngine.prototype.draw = function (drawCallback) {
