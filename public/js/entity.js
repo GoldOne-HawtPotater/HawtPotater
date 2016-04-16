@@ -1,24 +1,16 @@
 (function (exports) {
-    var Entity = function(x, y, playerId, player) {
+    var EntityCollection = {};
+
+    var Entity = function(x, y) {
         this.x = x;
         this.y = y;
-        this.removeFromWorld = player ? player.removeFromWorld : false;
-        this.isReady = player ? player.isReady : false;
-        this.playerId = playerId;
+        this.removeFromWorld = false;
     }
 
     Entity.prototype.syncEntity = function(entity) {
-        if (entity.playerId == this.playerId) {
-            this.x = entity.x;
-            this.y = entity.y;
-            this.removeFromWorld = entity.removeFromWorld;
-            this.isReady = entity.isReady;
-        }
-    }
-
-    Entity.prototype.toggleReady = function() {
-        this.isReady = !this.isReady;
-        console.log('Ready toggled.');
+        this.x = entity.x;
+        this.y = entity.y;
+        this.removeFromWorld = entity.removeFromWorld;
     }
 
     Entity.prototype.update = function () {
@@ -44,5 +36,66 @@
         //offscreenCtx.strokeRect(0,0,size,size);
         return offscreenCanvas;
     }
-    exports.Entity = Entity;
+
+    /** Background Test **/
+    function Background(game) {
+        Entity.call(this, 0, 400);
+        this.radius = 200;
+    }
+
+    Background.prototype = new Entity();
+    Background.prototype.constructor = Background;
+
+    Background.prototype.update = function () {
+    }
+
+    Background.prototype.draw = function (ctx) {
+        ctx.fillStyle = "SaddleBrown";
+        ctx.fillRect(0,500,800,300);
+        Entity.prototype.draw.call(this);
+    }
+
+    /** Hawt Potater Player Class **/
+    var HawtPlayer = function(playerObj) {
+        // this.animation = new Animation(ASSET_MANAGER.getAsset("./img/RobotUnicorn.png"), 0, 0, 206, 110, 0.02, 30, true, true);
+        // this.jumpAnimation = new Animation(ASSET_MANAGER.getAsset("./img/RobotUnicorn.png"), 618, 334, 174, 138, 0.02, 40, false, true);
+        this.jumping = false;
+        this.moving = false;
+        this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;
+        this.playerId = playerObj.playerId;
+        Entity.call(this, 0, 400);
+    }
+
+    HawtPlayer.prototype = new Entity();
+    HawtPlayer.prototype.constructor = HawtPlayer;
+
+    HawtPlayer.prototype.update = function () {
+
+        Entity.prototype.update.call(this);
+    }
+
+    HawtPlayer.prototype.draw = function (ctx) {
+
+        Entity.prototype.draw.call(this);
+    }
+
+    HawtPlayer.prototype.toggleReady = function() {
+        this.isReady = !this.isReady;
+        console.log('Ready toggled.');
+    }
+
+    HawtPlayer.prototype.syncEntity = function(entity) {
+        if (entity.playerId == this.playerId) {
+            this.isReady = entity.isReady;
+            Entity.prototype.syncEntity.call(this, entity);
+        }
+    }
+
+    // Add entities to the collection.
+    EntityCollection.Entity = Entity;
+    EntityCollection.HawtPlayer = HawtPlayer;
+    EntityCollection.Background = Background;
+
+    // Set the entity collection for our clients/server.
+    exports.EntityCollection = EntityCollection;
 })(typeof global === "undefined" ? window : exports);

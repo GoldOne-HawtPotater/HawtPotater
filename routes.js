@@ -41,7 +41,7 @@ module.exports = function(app,io){
 		// Keep a reference so we can stop the sync.
 		var gameSyncTimer = new Map();
 		// The delay in which we update everyone's gameworld.
-		var syncDelayInMilli = 2000;
+		var syncDelayInMilli = 5000;
 
 		// When the client emits the 'load' event, let them join the room.
 		socket.on('load',function(roomId){
@@ -142,11 +142,6 @@ module.exports = function(app,io){
 		});
 
 		/** Update the game with player interactions **/
-		socket.on('update_clients', function(data) {
-			console.log('Updating everyone else. Calling ' + data.theFunc + '.\n');
-			socket.broadcast.to(socket.room).emit('receive_player_update', data);
-		});
-
 		socket.on('update_gameworld', function(data) {
 			console.log('Updating server.');
 			if (gameworlds.get(socket.room)) {
