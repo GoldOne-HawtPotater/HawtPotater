@@ -2,6 +2,7 @@
     // all physics in here
     // no client code
 
+    /** Set up the functions that we need for the server. **/
     var EntityCollection = isClient ? window.EntityCollection : require('./entity').EntityCollection;
     var Map = isClient ? window.Map : require('collections/map');
     if (isClient) {
@@ -15,14 +16,33 @@
                         window.setTimeout(callback, 1000 / 60);
                     };
         })();
+
+        window.ASSET_MANAGER = new AssetManager();
     } 
+
+    function Timer() {
+        this.gameTime = 0;
+        this.maxStep = 0.05;
+        this.wallLastTimestamp = 0;
+    }
+
+    Timer.prototype.tick = function () {
+        var wallCurrent = Date.now();
+        var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
+        this.wallLastTimestamp = wallCurrent;
+
+        var gameDelta = Math.min(wallDelta, this.maxStep);
+        this.gameTime += gameDelta;
+        return gameDelta;
+    }
+
+    /** Gameworld Class **/
 
     var GameWorld = function () {
         this.players = new Map();
         this.gameStarted = false;
         this.entities = [];
         this.ctx = null;
-        this.gameworld = null;
         this.click = null;
         this.mouse = null;
         this.wheel = null;
@@ -34,6 +54,7 @@
         this.ctx = ctx;
         this.surfaceWidth = this.ctx.canvas.width;
         this.surfaceHeight = this.ctx.canvas.height;
+        this.timer = new Timer();
 
         console.log('game world initialized\n');
     }
@@ -72,11 +93,11 @@
 
     GameWorld.prototype.addPlayer = function (data) {
         this.players.set(data.playerId, new EntityCollection.HawtPlayer(data));
-        var currplayers = '';
-        this.players.forEach(function(ele, index, array){
-            currplayers += ele.playerId + ', ';
-        });
-        console.log('Current players: ' + currplayers + '\n');
+        // var currplayers = '';
+        // this.players.forEach(function(ele, index, array){
+        //     currplayers += ele.playerId + ', ';
+        // });
+        // console.log('Current players: ' + currplayers + '\n');
     }
 
     GameWorld.prototype.removePlayer = function (data) {
@@ -128,6 +149,7 @@
     }
 
     GameWorld.prototype.draw = function (drawCallback) {
+        var that = this;
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         this.ctx.save();
         /** Draw random entities **/
@@ -136,7 +158,7 @@
         }
         /** Draw Players **/
         this.players.forEach(function(player) {
-            player.draw(this.ctx);
+            player.draw(that.ctx, that.clockTick);
         });
         if (drawCallback) {
             drawCallback(this);
@@ -145,6 +167,7 @@
     }
 
     GameWorld.prototype.loop = function () {
+        this.clockTick = this.timer.tick();
         this.update();
         if (isClient) {
             this.draw();
@@ -154,22 +177,22 @@
     }
 
    GameWorld.prototype.syncTheWorlds = function (serverGameWorld) {
-        console.log('\nSyncing the worlds.')
+        // console.log('\nSyncing the worlds.');
         if (serverGameWorld.players.length != 0) { 
             var gw = this;
             serverGameWorld.players.forEach(function(player, index, array) {
                 if (!player.x) player = player[1];
-                console.log('Checking player: ' + player);
+                // console.log('Checking player: ' + player);
                 if (gw.players.get(player.playerId)) {
-                    console.log('Syncing a existing player.');
+                    // console.log('Syncing a existing player.');
                     // Player exist, update the player data.
                     gw.players.get(player.playerId).syncEntity(player);
                 } else {
-                    console.log('Sync a new player.');
+                    // console.log('Sync a new player.');
                     // Player does not exist. 
                     gw.players.set(player.playerId, new EntityCollection.HawtPlayer(player));
                 }
-                console.log('\n');
+                // console.log('\n');
             });
         }
    }

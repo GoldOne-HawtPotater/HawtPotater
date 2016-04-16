@@ -1,9 +1,6 @@
-// connect to the socket
-var socket = io();
-
 $(function(){
-    // Create an asset manager.
-    var ASSET_MANAGER = new AssetManager();
+    // connect to the socket
+    var socket = io();
     
     // Create the gameworld.
     var gameworld = new GameWorld();
@@ -92,43 +89,42 @@ $(function(){
 
     // on connection to server get the roomId of person's room
     socket.on('connect', function(){
-        // This is called when the page loads.
-        socket.emit('load', roomId);
+        var queueDownloads = function() {
+            ASSET_MANAGER.queueDownload("../img/stolen_corgi_walk.png");
+            //... Add more asssets below.
+        };
+
+        /** Download the assets **/
+        queueDownloads();
+        ASSET_MANAGER.downloadAll(function () {
+            // This is called when the page loads.
+            socket.emit('load', roomId);
+        });
     });
 
     // receive the names of all people in the game room
     socket.on('joingame', function(data){
-        var queueDownloads = function() {
-            ASSET_MANAGER.queueDownload("../img/unnamed.jpg");
-            //... Add more asssets below.
-        };
-
         if (gameworld.players.size < 4) {
             /** Register our key inputs. **/
             startInput();
+            myPlayerId = data.playerId;
+            gameworld.init(ctx);
+            gameworld.syncTheWorlds(data.theWorld);
+            gameworld.start();
 
-            /** Download the assets **/
-            queueDownloads();
-            ASSET_MANAGER.downloadAll(function () {
-                myPlayerId = data.playerId;
-                gameworld.init(ctx);
-                gameworld.syncTheWorlds(data.theWorld);
-                gameworld.start();
+            var bg = new EntityCollection.Background();
+            gameworld.addEntity(bg);
 
-                var bg = new EntityCollection.Background();
-                gameworld.addEntity(bg);
+            var sendData = {
+                theFunc: 'addPlayer',
+                playerId: myPlayerId,
+                roomId: roomId
+            };
 
-                var sendData = {
-                    theFunc: 'addPlayer',
-                    playerId: myPlayerId,
-                    roomId: roomId
-                };
-
-                // Add user to the game world.
-                gameworld.callFunc(sendData);
-                // Add the user to the game world on the server.
-                socket.emit('login', sendData);
-            });
+            // Add user to the game world.
+            gameworld.callFunc(sendData);
+            // Add the user to the game world on the server.
+            socket.emit('login', sendData);
         } else {
             // There's too many players. 
             // Show a message saying there is too many players

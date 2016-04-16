@@ -1,4 +1,4 @@
-(function (exports) {
+(function (exports, isClient) { 
     var EntityCollection = {};
 
     var Entity = function(x, y) {
@@ -13,12 +13,9 @@
         this.removeFromWorld = entity.removeFromWorld;
     }
 
-    Entity.prototype.update = function () {
-    }
+    Entity.prototype.update = function () {}
 
-    Entity.prototype.draw = function (ctx) {
-
-    }
+    Entity.prototype.draw = function (ctx) {}
 
     Entity.prototype.rotateAndCache = function (image, angle) {
         var offscreenCanvas = document.createElement('canvas');
@@ -38,8 +35,8 @@
     }
 
     /** Background Test **/
-    function Background(game) {
-        Entity.call(this, 0, 400);
+    function Background() {
+        Entity.call(this, 0, 0);
         this.radius = 200;
     }
 
@@ -51,7 +48,7 @@
 
     Background.prototype.draw = function (ctx) {
         ctx.fillStyle = "SaddleBrown";
-        ctx.fillRect(0,500,800,300);
+        ctx.fillRect(0,300,800,300);
         Entity.prototype.draw.call(this);
     }
 
@@ -59,11 +56,15 @@
     var HawtPlayer = function(playerObj) {
         // this.animation = new Animation(ASSET_MANAGER.getAsset("./img/RobotUnicorn.png"), 0, 0, 206, 110, 0.02, 30, true, true);
         // this.jumpAnimation = new Animation(ASSET_MANAGER.getAsset("./img/RobotUnicorn.png"), 618, 334, 174, 138, 0.02, 40, false, true);
+        if (isClient) {
+            this.walkingAnimation = new Animation(ASSET_MANAGER.getAsset('../img/stolen_corgi_walk.png'), 185, 0, 185, 164, 0.225, 2, true, false);
+        }
         this.jumping = false;
         this.moving = false;
         this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;
         this.playerId = playerObj.playerId;
-        Entity.call(this, 0, 400);
+        Entity.call(this, playerObj.playerId * 185, playerObj.playerId * 164);
+        // Entity.call(this, 0, 0);
     }
 
     HawtPlayer.prototype = new Entity();
@@ -74,8 +75,8 @@
         Entity.prototype.update.call(this);
     }
 
-    HawtPlayer.prototype.draw = function (ctx) {
-
+    HawtPlayer.prototype.draw = function (ctx, clockTick) {
+        this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y);
         Entity.prototype.draw.call(this);
     }
 
@@ -98,4 +99,4 @@
 
     // Set the entity collection for our clients/server.
     exports.EntityCollection = EntityCollection;
-})(typeof global === "undefined" ? window : exports);
+})(typeof global === "undefined" ? window : exports, typeof global === "undefined");
