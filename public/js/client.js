@@ -25,7 +25,7 @@ $(function(){
 
     /** Set up the sockets the client needs to listen to **/
     socket.on('sync_worlds', function (serverGameWorld) {
-        // gameEngine.gameworld.syncTheWorlds(serverGameWorld);
+        gameEngine.gameworld.syncTheWorlds(serverGameWorld);
     });
 
     // on connection to server get the roomId of person's room
@@ -46,9 +46,9 @@ $(function(){
             queueDownloads();
             ASSET_MANAGER.downloadAll(function () {
                 myPlayerId = data.playerId;
-                gameEngine.init(ctx, gameworld, myPlayerId);
+                gameEngine.init(ctx, gameworld);
                 gameEngine.gameworld.syncTheWorlds(data.theWorld);
-                gameEngine.start();
+                gameEngine.gameworld.start();
 
                 var sendData = {
                     theFunc: 'addPlayer',

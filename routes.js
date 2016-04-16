@@ -55,20 +55,27 @@ module.exports = function(app,io){
  					if (gameworlds.get(roomId) 
  						&& gameworlds.get(roomId).playersAreReady() 
  						&& !gameworlds.get(roomId).gameStarted
- 						&& gameworlds.get(roomId).players.length > 2) {
+ 						&& gameworlds.get(roomId).players.length >= 2) {
  						console.log('Game is starting for room #' + roomId + '\n');
 	        			gameworlds.get(roomId).gameStarted = true;
-	        			io.to(roomId).emit('receive_player_update', {
-	        				theFunc: 'startTheGame'
-	        			});
+	        			// io.to(roomId).emit('receive_player_update', {
+	        			// 	theFunc: 'startTheGame'
+	        			// });
 	        		}
  					// Send the server room game world to clients.
-		        	// io.to(roomId).emit('sync_worlds', gameworlds[roomId]);
+		        	io.to(roomId).emit('sync_worlds', gameworlds.get(roomId));
 		        }, syncDelayInMilli));
 			}
 		    if (room.length < 4) {
+		    	// var playerId = undefined;
+		    	// do {
+		    	// 	playerId = gameworlds.get(roomId).players.size;
+		    	// 	if (gameworlds.get(roomId).players.has(playerId)) {
+		    	// 		playerId = undefined;
+		    	// 	}
+		    	// } while (!playerId);
 				socket.emit('joingame', {
-					playerId: room.length,
+					playerId: gameworlds.get(roomId).players.size,
 					theWorld: gameworlds.get(roomId)
 				});	
 		    } else {
@@ -136,7 +143,7 @@ module.exports = function(app,io){
 
 		/** Update the game with player interactions **/
 		socket.on('update_clients', function(data) {
-			console.log('Updating everyone else. Calling ' + data.theFunc + '.');
+			console.log('Updating everyone else. Calling ' + data.theFunc + '.\n');
 			socket.broadcast.to(socket.room).emit('receive_player_update', data);
 		});
 
@@ -147,7 +154,7 @@ module.exports = function(app,io){
 			} else {
 				console.log('Server game world does not exist. Room = ' + socket.room);
 			}
-			console.log('Updating everyone else.');
+			console.log('Updating everyone else.\n');
 			socket.broadcast.to(socket.room).emit('receive_gameworld_update', data);
 		});
 
