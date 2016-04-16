@@ -12,7 +12,6 @@ window.requestAnimFrame = (function () {
 
 function GameEngine() {
     this.entities = [];
-    this.players = [];
     this.ctx = null;
     this.gameworld = null;
     this.click = null;
@@ -21,7 +20,7 @@ function GameEngine() {
     this.surfaceWidth = null;
     this.surfaceHeight = null;
     this.playerId = null;
-    this.gameIsPlaying = null;
+    this.gameIsPlaying = false;
 }
 
 GameEngine.prototype.init = function (ctx, gw, playerId) {
@@ -40,12 +39,18 @@ GameEngine.prototype.start = function () {
     console.log("start the game engine loop");
     var that = this;
     (function gameLoop() {
+        if(that.gameIsPlaying) {
+
+        } else {
+
+        }
         that.loop();
         requestAnimFrame(gameLoop, that.ctx.canvas);
     })();
 }
 
 GameEngine.prototype.startTheGame = function() {
+    console.log('The game is starting!');
     this.gameIsPlaying = true;
 }
 
@@ -82,7 +87,10 @@ GameEngine.prototype.startInput = function () {
 
     // Listen to the window (should change to canvas?)
     // Move to game engine.
-    $(window).keydown(function(e) {
+    var gamescreen = $('#gameWorldCanvas')
+                    .attr("tabindex", "0");
+
+    gamescreen.keydown(function(e) {
        var key = e.which;
        switch(key) {
             case 37: //left
@@ -97,13 +105,18 @@ GameEngine.prototype.startInput = function () {
                 socket.emit('update_gameworld', data);
                 that.gameworld.move(data);
                 break;
-            case 13: // {ENTER}
-                gameworld.toggleReady(that.playerId);
+            case 49: // {1 key}
+                var data = {
+                    theFunc: 'toggleReady',
+                    playerId: that.playerId
+                };
+                socket.emit('update_gameworld', data)
+                that.gameworld.toggleReady(data);
                 break;
        }
     });
 
-    $(window).keyup(function(e) {
+    gamescreen.keyup(function(e) {
        var key = e.which; 
        switch(key) {
             case 37: //left
@@ -120,20 +133,13 @@ GameEngine.prototype.startInput = function () {
     console.log('Input started');
 }
 
+
 GameEngine.prototype.addEntity = function (entity) {
     console.log('added entity');
     this.entities.push(entity);
 }
 
-GameEngine.prototype.addPlayer = function (data) {
-    this.players[data.playerId] = new Entity(this, 50, 50, data.playerId);
-    console.log('Player ' + data.playerId + ' has been added.');
-}
 
-GameEngine.prototype.removePlayer = function (data) {
-    this.players.pop(data.playerId);
-    console.log('Player ' + data.playerId + ' has been removed.');
-}
 
 GameEngine.prototype.draw = function (drawCallback) {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);

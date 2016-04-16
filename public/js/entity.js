@@ -1,28 +1,31 @@
 (function (exports) {
-    var Entity = function(gameworld, x, y, playerId) {
-        this.gameworld = gameworld;
+    var Entity = function(x, y, playerId, player) {
         this.x = x;
         this.y = y;
-        this.removeFromWorld = false;
-        this.isReady = false;
+        this.removeFromWorld = player ? player.removeFromWorld : false;
+        this.isReady = player ? player.isReady : false;
         this.playerId = playerId;
+    }
+
+    Entity.prototype.syncEntity = function(entity) {
+        if (entity.playerId == this.playerId) {
+            this.x = entity.x;
+            this.y = entity.y;
+            this.removeFromWorld = entity.removeFromWorld;
+            this.isReady = entity.isReady;
+        }
     }
 
     Entity.prototype.toggleReady = function() {
         this.isReady = !this.isReady;
+        console.log('Ready toggled.');
     }
 
     Entity.prototype.update = function () {
     }
 
     Entity.prototype.draw = function (ctx) {
-        if (this.gameworld.showOutlines && this.radius) {
-            ctx.beginPath();
-            ctx.strokeStyle = "green";
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-            ctx.stroke();
-            ctx.closePath();
-        }
+
     }
 
     Entity.prototype.rotateAndCache = function (image, angle) {

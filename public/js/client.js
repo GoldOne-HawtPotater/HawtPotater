@@ -8,21 +8,24 @@ $(function(){
     // Create the gameworld.
     var gameworld = new GameWorld();
 
+    // Create a game engine for the client
+    var gameEngine = new GameEngine();
+
     // Get the game field (I think this is the canvas?)
     var field = document.getElementById("field");
 
     // Get the context
-    var ctx = $("#gameWorld")[0].getContext("2d");
+    var ctx = $("#gameWorldCanvas")[0].getContext("2d");
 
     // Getting the roomId of the room from the url
     var roomId = Number(window.location.pathname.match(/\/game\/(\d+)$/)[1]);
 
-    // Create a game engine for the client
-    var gameEngine = new GameEngine();
+    // The user player id
+    var myPlayerId;
 
     /** Set up the sockets the client needs to listen to **/
-    socket.on('sync', function (data) {
-        gameEngine.gameworld = data;
+    socket.on('sync_worlds', function (serverGameWorld) {
+        // gameEngine.gameworld.syncTheWorlds(serverGameWorld);
     });
 
     // on connection to server get the roomId of person's room
@@ -38,23 +41,25 @@ $(function(){
             //... Add more asssets below.
         };
 
-        if (data.playerId < 4) {
+        if (gameworld.players.size < 4) {
             /** Download the assets **/
             queueDownloads();
             ASSET_MANAGER.downloadAll(function () {
-                gameEngine.init(ctx, gameworld, data.playerId);
+                myPlayerId = data.playerId;
+                gameEngine.init(ctx, gameworld, myPlayerId);
+                gameEngine.gameworld.syncTheWorlds(data.theWorld);
                 gameEngine.start();
 
                 var sendData = {
                     theFunc: 'addPlayer',
-                    playerId: data.playerId,
+                    playerId: myPlayerId,
                     roomId: roomId
                 };
 
+                // Add user to the game world.
+                gameEngine.gameworld.callFunc(sendData);
+                // Add the user to the game world on the server.
                 socket.emit('login', sendData);
-                socket.emit('update_clients', sendData);
-                gameEngine.addPlayer(sendData);
-                // gameEngine.gameworld.addPlayer(sendData);
             });
         } else {
             // There's too many players. 
@@ -64,8 +69,9 @@ $(function(){
     });
 
     socket.on('addNewPlayer', function (data) {
+        console.log('addNewPlayer from ' + data.playerId);
         if (data) {
-            gameEngine.addPlayer(data);
+            gameEngine.gameworld.addPlayer(data);
         }
     });
 
@@ -100,10 +106,15 @@ $(function(){
 
     socket.on('receive_gameworld_update', function(data){
         if(data && data.theFunc) {
-            gameEngine.gameworld[data.theFunc](data);
+            gameEngine.gameworld.callFunc(data);
         } else {
             console.log('receive_gameworld_update failed. Data is null.');
             console.log(data);
         }
     });
+
+    // socket.on('error', function (err) {
+    //   if (err.description) throw err.description;
+    //   else throw err; // Or whatever you want to do
+    // });
 });
