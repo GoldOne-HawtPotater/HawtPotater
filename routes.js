@@ -49,6 +49,8 @@ module.exports = function(app,io){
 			if (room.length == 0) {
 				// Create a new game world for the room.
 				gameworlds.set(roomId, new GameWorld());
+				gameworlds.get(roomId).init();
+				gameworlds.get(roomId).start();
 				// Sync the game world with other players.
  				gameSyncTimer.set(roomId, setInterval(function () {
  					// Check if the players are ready to play.
@@ -63,7 +65,7 @@ module.exports = function(app,io){
 	        			// });
 	        		}
  					// Send the server room game world to clients.
-		        	io.to(roomId).emit('sync_worlds', gameworlds.get(roomId));
+		        	io.to(roomId).emit('sync_players', gameworlds.get(roomId).players);
 		        }, syncDelayInMilli));
 			}
 		    if (room.length < 4) {
@@ -75,8 +77,8 @@ module.exports = function(app,io){
 		    	// 	}
 		    	// } while (!playerId);
 				socket.emit('joingame', {
-					playerId: gameworlds.get(roomId).players.size,
-					theWorld: gameworlds.get(roomId)
+					playerId: Date.now(),
+					thePlayers: gameworlds.get(roomId).players
 				});	
 		    } else {
 		    	// If there are too many players, emit the 'tooMany' event
@@ -94,7 +96,7 @@ module.exports = function(app,io){
 
 				// Use the socket object to store data. Each client gets
 				// their own unique socket object
-				socket.user = 'Player ' + data.playerId;
+				socket.playerId = data.playerId;
 				socket.room = data.roomId;
 
 				// Add the client to the room
@@ -104,7 +106,7 @@ module.exports = function(app,io){
 				// Tell everyone else to add the user.
 				socket.broadcast.to(socket.room).emit('receive_gameworld_update', data);
 
-				console.log(socket.user + ' has joined room ' + data.roomId + '.');
+				console.log('Player ' + socket.playerId + ' has joined room ' + data.roomId + '.');
 				console.log('There is ' + (room.length + 1) + ' player(s) in room ' + data.roomId + '.\n');
 			}
 			else {
@@ -119,13 +121,15 @@ module.exports = function(app,io){
 			// that his partner has left
 
 			var roomId = this.room;
-			console.log(this.user + ' has left room ' + this.room + '.');
+			console.log(this.playerId + ' has left room ' + this.room + '.');
 
-			socket.broadcast.to(this.room).emit('leave', {
-				boolean: true,
+			var data = {
+				theFunc: 'removePlayer',
 				room: this.room,
-				user: this.username
-			});
+				playerId: socket.playerId
+			};
+			gameworlds.get(roomId).callFunc(data);
+			socket.broadcast.to(this.room).emit('receive_gameworld_update', data);
 
 			// leave the room
 			socket.leave(socket.room);

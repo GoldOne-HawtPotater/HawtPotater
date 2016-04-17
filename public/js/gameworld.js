@@ -4,21 +4,23 @@
 
     /** Set up the functions that we need for the server. **/
     var EntityCollection = isClient ? window.EntityCollection : require('./entity').EntityCollection;
+    var Box2D = isClient ? window.Box2D : require('./box2d.js').Box2D;
     var Map = isClient ? window.Map : require('collections/map');
-    if (isClient) {
-        window.requestAnimFrame = (function () {
-            return window.requestAnimationFrame ||
+    exports.requestAnimFrame = (function () {
+            return isClient ? (window.requestAnimationFrame ||
                     window.webkitRequestAnimationFrame ||
                     window.mozRequestAnimationFrame ||
                     window.oRequestAnimationFrame ||
-                    window.msRequestAnimationFrame ||
+                    window.msRequestAnimationFrame) :
                     function (/* function */ callback, /* DOMElement */ element) {
-                        window.setTimeout(callback, 1000 / 60);
+                        setTimeout(callback, 1000 / 60);
                     };
         })();
+    if (isClient) {
+        
 
         window.ASSET_MANAGER = new AssetManager();
-    } 
+    }
 
     function Timer() {
         this.gameTime = 0;
@@ -40,6 +42,7 @@
 
     var GameWorld = function () {
         this.players = new Map();
+        this.playersB2d = new Map();
         this.gameStarted = false;
         this.entities = [];
         this.ctx = null;
@@ -48,12 +51,68 @@
         this.wheel = null;
         this.surfaceWidth = null;
         this.surfaceHeight = null;
+        this.SCALE = 30; // 30 pixels to 1 meter
     }
 
     GameWorld.prototype.init = function (ctx) {
         this.ctx = ctx;
-        this.surfaceWidth = this.ctx.canvas.width;
-        this.surfaceHeight = this.ctx.canvas.height;
+        this.surfaceWidth = 800;
+        this.surfaceHeight = 600;
+
+        // Create a new box2d world
+        this.b2dWorld = new Box2D.Dynamics.b2World(
+            new Box2D.Common.Math.b2Vec2(0, 10)   // gravity
+            , true                                // allow sleeping bodies
+        ); 
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 1.0;
+        fixDef.friction = 0.5;
+        fixDef.restitution = 0.2;
+        // Create the ground
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
+        // position the center of the object
+        bodyDef.position.x = this.surfaceWidth / 2 / this.SCALE;
+        bodyDef.position.y = (this.surfaceHeight / this.SCALE) - 1;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox((this.surfaceWidth / this.SCALE) / 2, 0.5 / 2);
+        this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
+
+        // for (var i = 0; i < 100; i++) {
+        //     // Specify a dynamic circle
+        //     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        //     fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(
+        //         Math.random() + 0.1 // radius
+        //         );
+        //     bodyDef.position.x = Math.random() * 25;
+        //     bodyDef.position.y = Math.random() * 10;
+        //     this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
+
+        //     // Specify a dynamic rectangle
+        //     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        //     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        //     fixDef.shape.SetAsBox(
+        //           Math.random() + 0.1 // half width
+        //         , Math.random() + 0.1 // half height
+        //         );
+        //     bodyDef.position.x = Math.random() * 25;
+        //     bodyDef.position.y = Math.random() * 10;
+        //     this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);            
+        // }
+
+        if (isClient) {
+            //setup debug draw
+            var debugDraw = new Box2D.Dynamics.b2DebugDraw();
+            debugDraw.SetSprite(this.ctx);
+            debugDraw.SetDrawScale(this.SCALE);
+            debugDraw.SetFillAlpha(0.3);
+            debugDraw.SetLineThickness(1.0);
+            debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
+            this.b2dWorld.SetDebugDraw(debugDraw);
+        }
+
+
+
         this.timer = new Timer();
 
         console.log('game world initialized\n');
@@ -65,8 +124,9 @@
 
     GameWorld.prototype.dodge = function (playerObj) {}
 
-    GameWorld.prototype.move = function (playerObj) {
+    GameWorld.prototype.move = function (data) {
         console.log(playerObj.playerId + ' is moving ' + playerObj.direction + '.');
+        players.get(data.playerId).isMovingLeft = true;
     }
 
     GameWorld.prototype.toggleReady = function (data) {
@@ -92,6 +152,37 @@
     }
 
     GameWorld.prototype.addPlayer = function (data) {
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 1.0;
+        fixDef.friction = 0.5;
+        fixDef.restitution = 0.2;
+
+        // Specify a player rectangle
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        bodyDef.fixedRotation = true
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox(
+            185 / 2 / this.SCALE,
+            164 / 2 / this.SCALE
+            );
+
+        if (data.x && data.y && data.width && data.heigth) {
+            // If we're passing 
+            bodyDef.position.x = data.x / this.SCALE;
+            bodyDef.position.y = data.y / this.SCALE;
+        } else {
+            bodyDef.position.x = 200 / this.SCALE;
+            bodyDef.position.y = 50 / this.SCALE;
+        }
+
+        var body = this.b2dWorld.CreateBody(bodyDef);
+        body.CreateFixture(fixDef); 
+
+        data.x = body.GetPosition().x * this.SCALE - data.width / 2;
+        data.y = body.GetPosition().y * this.SCALE - data.height / 2
+
+        this.playersB2d.set(data.playerId, body);
         this.players.set(data.playerId, new EntityCollection.HawtPlayer(data));
         // var currplayers = '';
         // this.players.forEach(function(ele, index, array){
@@ -101,7 +192,12 @@
     }
 
     GameWorld.prototype.removePlayer = function (data) {
-        this.players.remove(data.playerId);
+        // remove the player from the player map
+        this.players.delete(data.playerId);
+
+        // destory body from the world
+        this.b2dWorld.DestroyBody(this.playersB2d.get(data.playerId)); // this line causing the disconnects.
+        this.playersB2d.delete(data.playerId);
         // console.log('Player ' + data.playerId + ' has been removed.\n');
     }
 
@@ -116,7 +212,7 @@
                 // Initialize vars for looping lobby?
             }
             that.loop();
-            requestAnimFrame(gameLoop, that.ctx.canvas);
+            exports.requestAnimFrame(gameLoop);
         })();
     }
 
@@ -126,6 +222,13 @@
     }
 
     GameWorld.prototype.update = function () {
+        /** Update the b2dWorld **/
+        this.b2dWorld.Step(
+            1 / 60   //frame-rate
+            ,  10       //velocity iterations
+            ,  10       //position iterations
+        );
+
         /** Random Entities Update **/
         var entitiesCount = this.entities.length;
 
@@ -143,8 +246,12 @@
         }
 
         /** Player Updates **/
+        var that = this;
         this.players.forEach(function(player) {
-            player.update();
+            var body = that.playersB2d.get(player.playerId);
+            player.x = body.GetPosition().x * that.SCALE - player.width / 2;
+            player.y = body.GetPosition().y * that.SCALE - player.height / 2;
+            // console.log('The x,y is (' + player.x + ',' + player.y + ')');
         });
     }
 
@@ -152,6 +259,11 @@
         var that = this;
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         this.ctx.save();
+
+        // b2d debug
+        this.b2dWorld.DrawDebugData();
+        this.b2dWorld.ClearForces();
+
         /** Draw random entities **/
         for (var i = 0; i < this.entities.length; i++) {
             this.entities[i].draw(this.ctx);
@@ -163,6 +275,7 @@
         if (drawCallback) {
             drawCallback(this);
         }
+
         this.ctx.restore();
     }
 
@@ -176,12 +289,12 @@
         }
     }
 
-   GameWorld.prototype.syncTheWorlds = function (serverGameWorld) {
+   GameWorld.prototype.syncThePlayers = function (serverPlayerData) {
         // console.log('\nSyncing the worlds.');
-        if (serverGameWorld.players.length != 0) { 
+        if (serverPlayerData && serverPlayerData.length != 0) { 
             var gw = this;
-            serverGameWorld.players.forEach(function(player, index, array) {
-                if (!player.x) player = player[1];
+            serverPlayerData.forEach(function(player, index, array) {
+                player = player[1];
                 // console.log('Checking player: ' + player);
                 if (gw.players.get(player.playerId)) {
                     // console.log('Syncing a existing player.');
@@ -190,7 +303,8 @@
                 } else {
                     // console.log('Sync a new player.');
                     // Player does not exist. 
-                    gw.players.set(player.playerId, new EntityCollection.HawtPlayer(player));
+                    gw.addPlayer(player);
+                    // gw.players.set(player.playerId, new EntityCollection.HawtPlayer(player));
                 }
                 // console.log('\n');
             });

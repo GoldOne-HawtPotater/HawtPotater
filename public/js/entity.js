@@ -60,10 +60,13 @@
             this.walkingAnimation = new Animation(ASSET_MANAGER.getAsset('../img/stolen_corgi_walk.png'), 185, 0, 185, 164, 0.225, 2, true, false);
         }
         this.jumping = false;
-        this.moving = false;
+        this.isMovingLeft = false;
+        this.isMovingRight = false;
+        this.width = 185;
+        this.height = 164;
         this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;
         this.playerId = playerObj.playerId;
-        Entity.call(this, playerObj.playerId * 185, playerObj.playerId * 164);
+        Entity.call(this, playerObj.x, playerObj.y);
         // Entity.call(this, 0, 0);
     }
 

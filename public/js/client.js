@@ -43,9 +43,7 @@ $(function(){
            var key = e.which;
            switch(key) {
                 case 37: //left
-                case 38: //up
                 case 39: //right
-                case 40: //down
                     var data = {
                         theFunc: 'move',
                         playerId: myPlayerId,
@@ -83,8 +81,8 @@ $(function(){
     }
 
     /** Set up the sockets the client needs to listen to **/
-    socket.on('sync_worlds', function (serverGameWorld) {
-        gameworld.syncTheWorlds(serverGameWorld);
+    socket.on('sync_players', function (serverPlayerData) {
+        gameworld.syncThePlayers(serverPlayerData);
     });
 
     // on connection to server get the roomId of person's room
@@ -106,14 +104,15 @@ $(function(){
     socket.on('joingame', function(data){
         if (gameworld.players.size < 4) {
             /** Register our key inputs. **/
+            console.log('This browser id is ' + data.playerId);
             startInput();
             myPlayerId = data.playerId;
             gameworld.init(ctx);
-            gameworld.syncTheWorlds(data.theWorld);
+            gameworld.syncThePlayers(data.thePlayers);
             gameworld.start();
 
-            var bg = new EntityCollection.Background();
-            gameworld.addEntity(bg);
+            // var bg = new EntityCollection.Background();
+            // gameworld.addEntity(bg);
 
             var sendData = {
                 theFunc: 'addPlayer',
@@ -132,11 +131,13 @@ $(function(){
         }
     });
 
-    socket.on('leave',function(data){
-        if(data.boolean && roomId==data.room){
-
-        }
-    });
+    // socket.on('leave',function(data){
+    //     if(data.boolean && roomId==data.room){
+    //         gameworld.removePlayer({
+    //             playerId: data.playerId
+    //         })
+    //     }
+    // });
 
     socket.on('tooMany', function(data){
         // then spectate? We can let the client watch the game server.
