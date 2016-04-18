@@ -51,13 +51,13 @@
         this.wheel = null;
         this.surfaceWidth = null;
         this.surfaceHeight = null;
-        this.SCALE = 30; // 30 pixels to 1 meter
+        this.SCALE = 150; // 30 pixels to 1 meter
     }
 
     GameWorld.prototype.init = function (ctx) {
         this.ctx = ctx;
-        this.surfaceWidth = 800;
-        this.surfaceHeight = 600;
+        this.surfaceWidth = 1280;
+        this.surfaceHeight = 800;
 
         // Create a new box2d world
         this.b2dWorld = new Box2D.Dynamics.b2World(
@@ -78,7 +78,7 @@
         fixDef.shape.SetAsBox((this.surfaceWidth / this.SCALE) / 2, 0.5 / 2);
         this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
 
-        // for (var i = 0; i < 100; i++) {
+        // for (var i = 0; i < 10; i++) {
         //     // Specify a dynamic circle
         //     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
         //     fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(
@@ -120,7 +120,26 @@
 
     GameWorld.prototype.attack = function (playerObj) {}
 
-    GameWorld.prototype.jump = function (playerObj) {}
+    GameWorld.prototype.jumpPlayer = function (data) {
+        console.log(data.playerId + ' is jumping.');
+        if (data) {
+            var player = this.players.get(data.playerId);
+            var playerBody = this.playersB2d.get(data.playerId);
+            // Need to set the airborn flag to true/false to use the correct animation
+            // Method 1
+            var velocity = playerBody.GetLinearVelocity();
+            velocity.y = 20;
+            playerBody.SetLinearVelocity(velocity);
+            // Method 2 (failed)
+            // var jumpForce = new Box2D.Common.Math.b2Vec2(0, 1000);
+            // playerBody.ApplyForce(jumpForce, playerBody.GetPosition());
+            // Method 3
+            // playerBody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(0, 100 / this.SCALE));
+            // Method 4
+            // var jumpImpulse = new Box2D.Common.Math.b2Vec2(0, playerBody.GetMass() * 20);
+            // playerBody.ApplyImpulse(jumpImpulse, playerBody.GetPosition());
+        }
+    }
 
     GameWorld.prototype.dodge = function (playerObj) {}
 
@@ -167,21 +186,24 @@
     }
 
     GameWorld.prototype.addPlayer = function (data) {
-        var fixDef = new Box2D.Dynamics.b2FixtureDef;
-        fixDef.density = 1;
-        fixDef.friction = 0.5;
-        fixDef.restitution = 0;
-
-        // Specify a player rectangle
+        // Specify a player body definition
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
         bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
         bodyDef.fixedRotation = true
+
+        // fixture definition and shape definition for fixture
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 1;
         fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
         fixDef.shape.SetAsBox(
             185 / 2 / this.SCALE,
             164 / 2 / this.SCALE
             );
+        fixDef.friction = 1;
+        fixDef.restitution = 0.2;
+        
 
+        // create dynamic body
         if (data.x && data.y && data.width && data.height) {
             // If we're passing 
             bodyDef.position.x = data.x / this.SCALE + (data.width / this.SCALE / 2);
@@ -190,9 +212,15 @@
             bodyDef.position.x = 200 / this.SCALE;
             bodyDef.position.y = 50 / this.SCALE;
         }
-
         var body = this.b2dWorld.CreateBody(bodyDef);
+        body.SetSleepingAllowed(false);
+
+        // Add the fixture
         body.CreateFixture(fixDef); 
+
+        // Add foot sensor fixture
+
+
 
         // data.x = body.GetPosition().x * this.SCALE - data.width / 2;
         // data.y = body.GetPosition().y * this.SCALE - data.height / 2;
@@ -272,7 +300,7 @@
             }
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
-            // console.log('The x,y is (' + player.x + ',' + player.y + ')');
+            console.log('The x,y is (' + player.x + ',' + player.y + ')');
         });
     }
 

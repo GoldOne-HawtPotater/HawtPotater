@@ -59,7 +59,7 @@
         if (isClient) {
             this.walkingAnimation = new Animation(ASSET_MANAGER.getAsset('../img/stolen_corgi_walk.png'), 185, 0, 185, 164, 0.225, 2, true, false);
         }
-        this.jumping = false;
+        this.isJumping = false;
         this.isMoving = false;
         this.isMovingLeft = false;
         this.isMovingRight = false;

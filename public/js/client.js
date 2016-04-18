@@ -43,6 +43,17 @@ $(function(){
            var key = e.which;
            var data;
            switch(key) {
+                case 32:
+                    data = {
+                        theFunc: 'jumpPlayer',
+                        playerId: myPlayerId,
+                        value: true
+                    };
+                    if (!gameworld.players.get(myPlayerId).isJumping) {
+                        socket.emit('update_gameworld', data)
+                        gameworld.jumpPlayer(data);
+                    }
+                    break;
                 case 37: //left
                 case 39: //right
                     data = {
