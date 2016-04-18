@@ -124,9 +124,24 @@
 
     GameWorld.prototype.dodge = function (playerObj) {}
 
-    GameWorld.prototype.move = function (data) {
-        console.log(playerObj.playerId + ' is moving ' + playerObj.direction + '.');
-        players.get(data.playerId).isMovingLeft = true;
+    GameWorld.prototype.movePlayer = function (data) {
+        console.log(data.playerId + ' is moving ' + data.direction + '.');
+        if (data && data.direction) {
+            var player = this.players.get(data.playerId);
+            player.isMoving = data.value;
+            switch(data.direction) {
+                case 37: //left
+                    player.direction = -1;
+                    break;
+                case 39: //right
+                    player.direction = 1;
+                    break;
+            }
+            var playerBody = this.playersB2d.get(data.playerId);
+            // playerBody.SetAwake(true);
+            // playerBody.ApplyForce(new Box2D.Common.Math.b2Vec2((player.moveSpeed / this.SCALE)), playerBody.GetPosition());
+            // playerBody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2((xForce / this.SCALE), playerBody.GetLinearVelocity().y));
+        }
     }
 
     GameWorld.prototype.toggleReady = function (data) {
@@ -153,9 +168,9 @@
 
     GameWorld.prototype.addPlayer = function (data) {
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
-        fixDef.density = 1.0;
+        fixDef.density = 1;
         fixDef.friction = 0.5;
-        fixDef.restitution = 0.2;
+        fixDef.restitution = 0;
 
         // Specify a player rectangle
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
@@ -167,10 +182,10 @@
             164 / 2 / this.SCALE
             );
 
-        if (data.x && data.y && data.width && data.heigth) {
+        if (data.x && data.y && data.width && data.height) {
             // If we're passing 
-            bodyDef.position.x = data.x / this.SCALE;
-            bodyDef.position.y = data.y / this.SCALE;
+            bodyDef.position.x = data.x / this.SCALE + (data.width / this.SCALE / 2);
+            bodyDef.position.y = data.y / this.SCALE + (data.height / this.SCALE / 2);
         } else {
             bodyDef.position.x = 200 / this.SCALE;
             bodyDef.position.y = 50 / this.SCALE;
@@ -179,8 +194,11 @@
         var body = this.b2dWorld.CreateBody(bodyDef);
         body.CreateFixture(fixDef); 
 
-        data.x = body.GetPosition().x * this.SCALE - data.width / 2;
-        data.y = body.GetPosition().y * this.SCALE - data.height / 2
+        // data.x = body.GetPosition().x * this.SCALE - data.width / 2;
+        // data.y = body.GetPosition().y * this.SCALE - data.height / 2;
+
+        data.x = body.GetPosition().x * this.SCALE;
+        data.y = body.GetPosition().y * this.SCALE;
 
         this.playersB2d.set(data.playerId, body);
         this.players.set(data.playerId, new EntityCollection.HawtPlayer(data));
@@ -247,8 +265,11 @@
 
         /** Player Updates **/
         var that = this;
-        this.players.forEach(function(player) {
+        this.players.forEach(function(player) {0
             var body = that.playersB2d.get(player.playerId);
+            if (player.isMoving) {
+                body.SetLinearVelocity(new Box2D.Common.Math.b2Vec2((player.moveSpeed / that.SCALE * player.direction), body.GetLinearVelocity().y));
+            }
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
             // console.log('The x,y is (' + player.x + ',' + player.y + ')');

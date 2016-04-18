@@ -60,8 +60,11 @@
             this.walkingAnimation = new Animation(ASSET_MANAGER.getAsset('../img/stolen_corgi_walk.png'), 185, 0, 185, 164, 0.225, 2, true, false);
         }
         this.jumping = false;
+        this.isMoving = false;
         this.isMovingLeft = false;
         this.isMovingRight = false;
+        this.direction = 1;
+        this.moveSpeed = 200;
         this.width = 185;
         this.height = 164;
         this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;

@@ -41,19 +41,23 @@ $(function(){
 
         gamescreen.keydown(function(e) {
            var key = e.which;
+           var data;
            switch(key) {
                 case 37: //left
                 case 39: //right
-                    var data = {
-                        theFunc: 'move',
+                    data = {
+                        theFunc: 'movePlayer',
                         playerId: myPlayerId,
-                        direction: key
+                        direction: key,
+                        value: true
                     };
-                    socket.emit('update_gameworld', data);
-                    gameworld.move(data);
+                    if (!gameworld.players.get(myPlayerId).isMoving) {
+                        socket.emit('update_gameworld', data)
+                        gameworld.movePlayer(data);
+                    }
                     break;
                 case 49: // {1 key}
-                    var data = {
+                    data = {
                         theFunc: 'toggleReady',
                         playerId: myPlayerId
                     };
@@ -67,10 +71,18 @@ $(function(){
            var key = e.which; 
            switch(key) {
                 case 37: //left
+                case 39: //right
+                    var data = {
+                        theFunc: 'movePlayer',
+                        playerId: myPlayerId,
+                        direction: key,
+                        value: false
+                    };
+                    socket.emit('update_gameworld', data);
+                    gameworld.movePlayer(data);
                     break;
                 case 38: //up
                     break;
-                case 39: //right
                     break;
                 case 40: //down
                     break;
