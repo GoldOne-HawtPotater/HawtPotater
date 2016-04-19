@@ -18,7 +18,6 @@ var io = require('socket.io').listen(app.listen(port));
 
 // Require the configuration and the routes files, and pass
 // the app and io as arguments to the returned functions.
-
 require('./config')(app, io);
 require('./routes')(app, io);
 

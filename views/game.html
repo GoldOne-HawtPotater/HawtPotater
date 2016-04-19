@@ -23,16 +23,17 @@
 	</header>
 
 
-	<canvas id="gameWorld" width="1000" height="1000" style="border: 1px solid brown; background: white"></canvas>
+	<canvas id="gameWorldCanvas" width="1280" height="800" style="border: 1px solid brown; background: white"></canvas>
 
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="../js/jquery.min.js"></script>
 	<script src="../js/moment.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
-	<!-- Always keep in order: entity, gameengine, gameworld, assetmgr, client -->
-	<script src="../js/entity.js"></script>
-	<script src="../js/gameengine.js"></script>
-	<script src="../js/gameworld.js"></script>
+	<script src="../js/box2d.js"></script>
+	<!-- Always keep in order: animation, assetmgr, entity, gameworld, client -->
+	<script src="../js/animation.js"></script>
 	<script src="../js/assetmgr.js"></script>
+	<script src="../js/entity.js"></script>
+	<script src="../js/gameworld.js"></script>
 	<script src="../js/client.js"></script>
 
 </body>

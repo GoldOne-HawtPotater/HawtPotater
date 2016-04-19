@@ -1,157 +1,173 @@
+// The game engine code.
+// window.requestAnimFrame = (function () {
+//     return window.requestAnimationFrame ||
+//             window.webkitRequestAnimationFrame ||
+//             window.mozRequestAnimationFrame ||
+//             window.oRequestAnimationFrame ||
+//             window.msRequestAnimationFrame ||
+//             function (/* function */ callback, /* DOMElement */ element) {
+//                 window.setTimeout(callback, 1000 / 60);
+//             };
+// })();
 
-window.requestAnimFrame = (function () {
-    return window.requestAnimationFrame ||
-            window.webkitRequestAnimationFrame ||
-            window.mozRequestAnimationFrame ||
-            window.oRequestAnimationFrame ||
-            window.msRequestAnimationFrame ||
-            function (/* function */ callback, /* DOMElement */ element) {
-                window.setTimeout(callback, 1000 / 60);
-            };
-})();
+// function GameEngine() {
+//     this.entities = [];
+//     this.ctx = null;
+//     this.gameworld = null;
+//     this.click = null;
+//     this.mouse = null;
+//     this.wheel = null;
+//     this.surfaceWidth = null;
+//     this.surfaceHeight = null;
+// }
 
-function GameEngine() {
-    this.entities = [];
-    this.ctx = null;
-    this.gameworld = null;
-    this.click = null;
-    this.mouse = null;
-    this.wheel = null;
-    this.surfaceWidth = null;
-    this.surfaceHeight = null;
-    this.player_num = null;
-}
+// GameEngine.prototype.init = function (ctx, gw) {
+//     this.ctx = ctx;
+//     this.gameworld = gw;
+//     this.surfaceWidth = this.ctx.canvas.width;
+//     this.surfaceHeight = this.ctx.canvas.height;
+//     this.startInput();
 
-GameEngine.prototype.init = function (ctx, gw, player_num) {
-    this.ctx = ctx;
-    this.gameworld = gw;
-    this.surfaceWidth = this.ctx.canvas.width;
-    this.surfaceHeight = this.ctx.canvas.height;
-    this.startInput();
-    this.player_num = player_num;
+//     console.log('game engine initialized');
+// }
 
-    console.log('game initialized');
-}
+// GameEngine.prototype.start = function () {
+//     console.log("start the game engine loop");
+//     var that = this;
+//     (function gameLoop() {
+//         if(that.gameIsPlaying) {
 
-GameEngine.prototype.start = function () {
-    console.log("starting game");
-    var that = this;
-    (function gameLoop() {
-        that.loop();
-        requestAnimFrame(gameLoop, that.ctx.canvas);
-    })();
-}
+//         } else {
 
-GameEngine.prototype.startInput = function () {
-    console.log('Starting input');
+//         }
+//         that.loop();
+//         requestAnimFrame(gameLoop, that.ctx.canvas);
+//     })();
+// }
 
-    var getXandY = function (e) {
-        var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
-        var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
+// GameEngine.prototype.startTheGame = function() {
+//     console.log('The game is starting!');
+//     this.gameIsPlaying = true;
+// }
 
-        if (x < 1024) {
-            x = Math.floor(x / 32);
-            y = Math.floor(y / 32);
-        }
+// GameEngine.prototype.startInput = function () {
+//     console.log('Starting input');
+//     var that = this;
 
-        return { x: x, y: y };
-    }
+//     var getXandY = function (e) {
+//         var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
+//         var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
 
-    var that = this;
+//         if (x < 1024) {
+//             x = Math.floor(x / 32);
+//             y = Math.floor(y / 32);
+//         }
 
-    this.ctx.canvas.addEventListener("click", function (e) {
-        that.click = getXandY(e);
-    }, false);
+//         return { x: x, y: y };
+//     }
 
-    this.ctx.canvas.addEventListener("mousemove", function (e) {
-        that.mouse = getXandY(e);
-    }, false);
+//     // this.ctx.canvas.addEventListener("click", function (e) {
+//     //     that.click = getXandY(e);
+//     // }, false);
 
-    this.ctx.canvas.addEventListener("mousewheel", function (e) {
-        that.wheel = e;
-    }, false);
+//     // this.ctx.canvas.addEventListener("mousemove", function (e) {
+//     //     that.mouse = getXandY(e);
+//     // }, false);
 
-    /** Set up the key listeners **/
+//     // this.ctx.canvas.addEventListener("mousewheel", function (e) {
+//     //     that.wheel = e;
+//     // }, false);
 
-    // Listen to the window (should change to canvas?)
-    // Move to game engine.
-    $(window).keydown(function(e) {
-       var key = e.which;
-       switch(key) {
-            case 37: //left
-                socket.emit('player_update', that.player_num);
-                that.gameworld.move(that.player_num);
-                break;
-            case 38: //up
-                socket.emit('player_update', player_num);
-                gameworld.move(player_num);
-                break;
-            case 39: //right
-                socket.emit('player_update', player_num);
-                gameworld.move(player_num);
-                break;
-            case 40: //down
-                socket.emit('player_update', player_num);
-                gameworld.move(player_num);
-                break;
-       }
-    });
+//     /** Set up the key listeners **/
 
-    $(window).keyup(function(e) {
-       var key = e.which; 
-       switch(key) {
-            case 37: //left
-                break;
-            case 38: //up
-                break;
-            case 39: //right
-                break;
-            case 40: //down
-                break;
-       }
-    });
+//     // Move to game engine.
+//     var gamescreen = $('#gameWorldCanvas')
+//                     .attr("tabindex", "0");
 
-    console.log('Input started');
-}
+//     gamescreen.keydown(function(e) {
+//        var key = e.which;
+//        switch(key) {
+//             case 37: //left
+//             case 38: //up
+//             case 39: //right
+//             case 40: //down
+//                 var data = {
+//                     theFunc: 'move',
+//                     playerId: that.playerId,
+//                     direction: key
+//                 };
+//                 socket.emit('update_gameworld', data);
+//                 that.gameworld.move(data);
+//                 break;
+//             case 49: // {1 key}
+//                 var data = {
+//                     theFunc: 'toggleReady',
+//                     playerId: that.playerId
+//                 };
+//                 socket.emit('update_gameworld', data)
+//                 that.gameworld.toggleReady(data);
+//                 break;
+//        }
+//     });
 
-GameEngine.prototype.addEntity = function (entity) {
-    console.log('added entity');
-    this.entities.push(entity);
-}
+//     gamescreen.keyup(function(e) {
+//        var key = e.which; 
+//        switch(key) {
+//             case 37: //left
+//                 break;
+//             case 38: //up
+//                 break;
+//             case 39: //right
+//                 break;
+//             case 40: //down
+//                 break;
+//        }
+//     });
 
-GameEngine.prototype.draw = function (drawCallback) {
-    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-    this.ctx.save();
-    for (var i = 0; i < this.entities.length; i++) {
-        this.entities[i].draw(this.ctx);
-    }
-    if (drawCallback) {
-        drawCallback(this);
-    }
-    this.ctx.restore();
-}
+//     console.log('Input started');
+// }
 
-GameEngine.prototype.update = function () {
-    var entitiesCount = this.entities.length;
 
-    for (var i = 0; i < entitiesCount; i++) {
-        var entity = this.entities[i];
+// GameEngine.prototype.addEntity = function (entity) {
+//     console.log('added entity');
+//     this.entities.push(entity);
+// }
 
-        if (!entity.removeFromWorld) {
-            entity.update();
-        }
-    }
 
-    for (var i = this.entities.length - 1; i >= 0; --i) {
-        if (this.entities[i].removeFromWorld) {
-            this.entities.splice(i, 1);
-        }
-    }
-}
 
-GameEngine.prototype.loop = function () {
-    this.update();
-    this.draw();
-    this.click = null;
-    this.wheel = null;
-}
+// GameEngine.prototype.draw = function (drawCallback) {
+//     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+//     this.ctx.save();
+//     for (var i = 0; i < this.entities.length; i++) {
+//         this.entities[i].draw(this.ctx);
+//     }
+//     if (drawCallback) {
+//         drawCallback(this);
+//     }
+//     this.ctx.restore();
+// }
+
+// GameEngine.prototype.update = function () {
+//     var entitiesCount = this.entities.length;
+
+//     for (var i = 0; i < entitiesCount; i++) {
+//         var entity = this.entities[i];
+
+//         if (!entity.removeFromWorld) {
+//             entity.update();
+//         }
+//     }
+
+//     for (var i = this.entities.length - 1; i >= 0; --i) {
+//         if (this.entities[i].removeFromWorld) {
+//             this.entities.splice(i, 1);
+//         }
+//     }
+// }
+
+// GameEngine.prototype.loop = function () {
+//     this.update();
+//     this.draw();
+//     this.click = null;
+//     this.wheel = null;
+// }

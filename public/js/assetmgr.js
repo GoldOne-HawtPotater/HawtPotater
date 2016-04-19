@@ -1,7 +1,7 @@
 function AssetManager() {
     this.successCount = 0;
     this.errorCount = 0;
-    this.cache = [];
+    this.cache = new Map();
     this.downloadQueue = [];
 }
 
@@ -28,11 +28,13 @@ AssetManager.prototype.downloadAll = function (callback) {
             if (that.isDone()) { callback(); }
         });
         img.src = path;
-        this.cache[path] = img;
+        // this.cache[path] = img;
+        this.cache.set(path, img);
     }
 }
 
 AssetManager.prototype.getAsset = function(path){
     //console.log(path.toString());
-    return this.cache[path];
+    // return this.cache[path];
+    return this.cache.get(path);
 }
