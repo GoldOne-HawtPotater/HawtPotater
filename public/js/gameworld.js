@@ -300,7 +300,7 @@
             }
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
-            console.log('The x,y is (' + player.x + ',' + player.y + ')');
+            // console.log('The x,y is (' + player.x + ',' + player.y + ')');
         });
     }
 
