@@ -128,11 +128,8 @@
             // Need to set the airborn flag to true/false to use the correct animation
             // Method 1
             var velocity = playerBody.GetLinearVelocity();
-            if (velocity.y == 0) {
-                console.log(data.playerId + 's y velocity was zero, so a jump was permitted.');
-                velocity.y = 30;
-                playerBody.SetLinearVelocity(velocity);
-            }
+            velocity.y = 30;
+            playerBody.SetLinearVelocity(velocity);
             // Method 2 (failed)
             // var jumpForce = new Box2D.Common.Math.b2Vec2(0, 1000);
             // playerBody.ApplyForce(jumpForce, playerBody.GetPosition());

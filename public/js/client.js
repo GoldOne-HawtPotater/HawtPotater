@@ -49,7 +49,7 @@ $(function(){
                         playerId: myPlayerId,
                         value: true
                     };
-                    if (!gameworld.players.get(myPlayerId).isJumping) {
+                    if (gameworld.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
                         socket.emit('update_gameworld', data)
                         gameworld.jumpPlayer(data);
                     }
