@@ -1,9 +1,10 @@
 (function (exports, isClient) { 
     var EntityCollection = {};
 
-    var Entity = function(x, y) {
+    var Entity = function(x, y, id) {
         this.x = x;
         this.y = y;
+        this.id = id;
         this.removeFromWorld = false;
     }
 
@@ -69,8 +70,7 @@
         this.height = 164;
         this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;
         this.playerId = playerObj.playerId;
-        Entity.call(this, playerObj.x, playerObj.y);
-        // Entity.call(this, 0, 0);
+        Entity.call(this, playerObj.x, playerObj.y, playerObj.playerId);
     }
 
     HawtPlayer.prototype = new Entity();
@@ -98,10 +98,37 @@
         }
     }
 
+    var Potato = function(potatoData) {
+        if (isClient) {
+            this.sprite = new Animation(ASSET_MANAGER.getAsset('../img/potato.png'), 0, 0, 30, 27, 0.225, 1, true, false);
+        }
+        this.width = 30;
+        this.height = 27;
+        this.rotation = 0;
+        Entity.call(this, potatoData.x, potatoData.y, Date.now());
+    }
+
+    Potato.prototype = new Entity();
+    Potato.prototype.constructor = Potato;
+
+    Potato.prototype.update = function() {
+        Entity.prototype.update.call(this);
+    }
+
+    Potato.prototype.draw = function(ctx, clockTick) {
+        this.sprite.drawFrame(clockTick, ctx, this.x, this.y);
+    }
+
+    Potato.prototype.syncEntity = function(entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
+
     // Add entities to the collection.
     EntityCollection.Entity = Entity;
     EntityCollection.HawtPlayer = HawtPlayer;
     EntityCollection.Background = Background;
+    EntityCollection.Potato = Potato;
 
     // Set the entity collection for our clients/server.
     exports.EntityCollection = EntityCollection;
