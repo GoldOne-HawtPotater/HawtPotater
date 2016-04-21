@@ -121,15 +121,18 @@
     GameWorld.prototype.attack = function (playerObj) {}
 
     GameWorld.prototype.jumpPlayer = function (data) {
-        console.log(data.playerId + ' is jumping.');
+        console.log(data.playerId + ' is attempting a jump.');
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
             // Need to set the airborn flag to true/false to use the correct animation
             // Method 1
             var velocity = playerBody.GetLinearVelocity();
-            velocity.y = 20;
-            playerBody.SetLinearVelocity(velocity);
+            if (velocity.y == 0) {
+                console.log(data.playerId + 's y velocity was zero, so a jump was permitted.');
+                velocity.y = 30;
+                playerBody.SetLinearVelocity(velocity);
+            }
             // Method 2 (failed)
             // var jumpForce = new Box2D.Common.Math.b2Vec2(0, 1000);
             // playerBody.ApplyForce(jumpForce, playerBody.GetPosition());
