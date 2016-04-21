@@ -112,6 +112,7 @@ $(function(){
     socket.on('connect', function(){
         var queueDownloads = function() {
             ASSET_MANAGER.queueDownload("../img/stolen_corgi_walk.png");
+            ASSET_MANAGER.queueDownload("../img/potato.png");
             //... Add more asssets below.
         };
 

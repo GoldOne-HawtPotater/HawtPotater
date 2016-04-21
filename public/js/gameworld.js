@@ -185,6 +185,10 @@
         }
     }
 
+    GameWorld.prototype.addPotato = function (data) {
+        // addPotato to game world here
+    }
+
     GameWorld.prototype.addPlayer = function (data) {
         // Specify a player body definition
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
