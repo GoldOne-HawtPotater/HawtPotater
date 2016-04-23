@@ -44,7 +44,8 @@
         this.players = new Map();
         this.playersB2d = new Map();
         this.gameStarted = false;
-        this.entities = [];
+        this.entities = new Map();
+        this.entitiesB2d = new Map();
         this.ctx = null;
         this.click = null;
         this.mouse = null;
@@ -166,6 +167,7 @@
     GameWorld.prototype.toggleReady = function (data) {
         this.players.get(data.playerId).isReady ^= true;
         console.log('Player ' + data.playerId + ' is' + (this.players.get(data.playerId).isReady ? ' ' : ' not ') + 'ready.');
+        this.addPotato(data);
     }
 
     GameWorld.prototype.playersAreReady = function() {
@@ -186,7 +188,39 @@
     }
 
     GameWorld.prototype.addPotato = function (data) {
-        // addPotato to game world here
+         // Specify a player body definition
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+
+                // fixture definition and shape definition for fixture
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 0.5;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox(
+            30 / 2 / this.SCALE,
+            27 / 2 / this.SCALE
+            );
+        fixDef.friction = 1;
+        fixDef.restitution = 0.7;
+
+        bodyDef.position.x = 200 / this.SCALE;
+        bodyDef.position.y = 50 / this.SCALE;
+
+        var body = this.b2dWorld.CreateBody(bodyDef);
+        body.SetSleepingAllowed(false);
+
+        body.CreateFixture(fixDef); 
+
+        //data.x = body.GetPosition().x * this.SCALE;
+        //data.y = body.GetPosition().y * this.SCALE;
+
+        var potato = new EntityCollection.Potato({
+        	x: 200,
+        	y: 50
+        });
+        this.entities.set(potato.id, potato);
+        this.entitiesB2d.set(potato.id, body);
+
     }
 
     GameWorld.prototype.addPlayer = function (data) {
@@ -280,24 +314,16 @@
         );
 
         /** Random Entities Update **/
-        var entitiesCount = this.entities.length;
-
-        for (var i = 0; i < entitiesCount; i++) {
-            var entity = this.entities[i];
-            if (!entity.removeFromWorld) {
-                entity.update();
-            }
-        }
-
-        for (var i = this.entities.length - 1; i >= 0; --i) {
-            if (this.entities[i].removeFromWorld) {
-                this.entities.splice(i, 1);
-            }
-        }
+        var that = this;
+        this.entities.forEach(function(entity) {
+            var body = that.entitiesB2d.get(entity.id);
+            entity.x = body.GetPosition().x * that.SCALE - entity.width / 2;
+            entity.y = body.GetPosition().y * that.SCALE - entity.height / 2;
+            // console.log('The x,y is (' + player.x + ',' + player.y + ')');
+        });
 
         /** Player Updates **/
-        var that = this;
-        this.players.forEach(function(player) {0
+        this.players.forEach(function(player) {
             var body = that.playersB2d.get(player.playerId);
             if (player.isMoving) {
                 // var vel = body.GetLinearVelocity();
@@ -327,9 +353,9 @@
         this.b2dWorld.ClearForces();
 
         /** Draw random entities **/
-        for (var i = 0; i < this.entities.length; i++) {
-            this.entities[i].draw(this.ctx);
-        }
+        this.entities.forEach(function(entity) {
+            entity.draw(that.ctx, that.clockTick);
+        });
         /** Draw Players **/
         this.players.forEach(function(player) {
             player.draw(that.ctx, that.clockTick);
