@@ -65,6 +65,7 @@ module.exports = function(app,io){
 	        			// });
 	        		}
  					// Send the server room game world to clients.
+ 					// console.log("Server: Syncing the players.");
 		        	io.to(roomId).emit('sync_players', gameworlds.get(roomId).players);
 		        }, syncDelayInMilli));
 			}

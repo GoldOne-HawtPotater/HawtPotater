@@ -51,13 +51,13 @@
         this.wheel = null;
         this.surfaceWidth = null;
         this.surfaceHeight = null;
-        this.SCALE = 150; // 30 pixels to 1 meter
+        this.SCALE = 30; // 30 pixels to 1 meter
     }
 
     GameWorld.prototype.init = function (ctx) {
         this.ctx = ctx;
         this.surfaceWidth = 1280;
-        this.surfaceHeight = 800;
+        this.surfaceHeight = 720;
 
         // Create a new box2d world
         this.b2dWorld = new Box2D.Dynamics.b2World(
@@ -300,10 +300,19 @@
         this.players.forEach(function(player) {0
             var body = that.playersB2d.get(player.playerId);
             if (player.isMoving) {
-                body.SetLinearVelocity(new Box2D.Common.Math.b2Vec2((player.moveSpeed / that.SCALE * player.direction), body.GetLinearVelocity().y));
+                // var vel = body.GetLinearVelocity();
+                // float desireVel = 0;
+                
+                body.SetLinearVelocity(
+                    new Box2D.Common.Math.b2Vec2(
+                        (player.moveSpeed / that.SCALE * player.direction), 
+                        body.GetLinearVelocity().y
+                    )
+                );
             }
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
+            
             // console.log('The x,y is (' + player.x + ',' + player.y + ')');
         });
     }
@@ -353,6 +362,11 @@
                     // console.log('Syncing a existing player.');
                     // Player exist, update the player data.
                     gw.players.get(player.playerId).syncEntity(player);
+                    var position = new Box2D.Common.Math.b2Vec2(
+                        player.x / gw.SCALE + (player.width / gw.SCALE / 2),
+                        player.y / gw.SCALE + (player.height / gw.SCALE / 2)
+                        );
+                    gw.playersB2d.get(player.playerId).SetPosition(position);
                 } else {
                     // console.log('Sync a new player.');
                     // Player does not exist. 
