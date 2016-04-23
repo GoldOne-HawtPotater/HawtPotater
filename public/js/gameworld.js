@@ -17,8 +17,6 @@
                     };
         })();
     if (isClient) {
-        
-
         window.ASSET_MANAGER = new AssetManager();
     }
 
@@ -26,9 +24,11 @@
         this.gameTime = 0;
         this.maxStep = 0.05;
         this.wallLastTimestamp = 0;
+        this.counter = 0;
     }
 
     Timer.prototype.tick = function () {
+        this.counter++;
         var wallCurrent = Date.now();
         var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
         this.wallLastTimestamp = wallCurrent;
@@ -79,28 +79,6 @@
         fixDef.shape.SetAsBox((this.surfaceWidth / this.SCALE) / 2, 0.5 / 2);
         this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
 
-        // for (var i = 0; i < 10; i++) {
-        //     // Specify a dynamic circle
-        //     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-        //     fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(
-        //         Math.random() + 0.1 // radius
-        //         );
-        //     bodyDef.position.x = Math.random() * 25;
-        //     bodyDef.position.y = Math.random() * 10;
-        //     this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
-
-        //     // Specify a dynamic rectangle
-        //     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-        //     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
-        //     fixDef.shape.SetAsBox(
-        //           Math.random() + 0.1 // half width
-        //         , Math.random() + 0.1 // half height
-        //         );
-        //     bodyDef.position.x = Math.random() * 25;
-        //     bodyDef.position.y = Math.random() * 10;
-        //     this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);            
-        // }
-
         if (isClient) {
             //setup debug draw
             var debugDraw = new Box2D.Dynamics.b2DebugDraw();
@@ -127,18 +105,9 @@
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
             // Need to set the airborn flag to true/false to use the correct animation
-            // Method 1
             var velocity = playerBody.GetLinearVelocity();
             velocity.y = 30;
             playerBody.SetLinearVelocity(velocity);
-            // Method 2 (failed)
-            // var jumpForce = new Box2D.Common.Math.b2Vec2(0, 1000);
-            // playerBody.ApplyForce(jumpForce, playerBody.GetPosition());
-            // Method 3
-            // playerBody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(0, 100 / this.SCALE));
-            // Method 4
-            // var jumpImpulse = new Box2D.Common.Math.b2Vec2(0, playerBody.GetMass() * 20);
-            // playerBody.ApplyImpulse(jumpImpulse, playerBody.GetPosition());
         }
     }
 
@@ -158,9 +127,6 @@
                     break;
             }
             var playerBody = this.playersB2d.get(data.playerId);
-            // playerBody.SetAwake(true);
-            // playerBody.ApplyForce(new Box2D.Common.Math.b2Vec2((player.moveSpeed / this.SCALE)), playerBody.GetPosition());
-            // playerBody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2((xForce / this.SCALE), playerBody.GetLinearVelocity().y));
         }
     }
 
@@ -257,22 +223,16 @@
         body.CreateFixture(fixDef); 
 
         // Add foot sensor fixture
+        // ... implement the foot fixture & body
 
-
-
-        // data.x = body.GetPosition().x * this.SCALE - data.width / 2;
-        // data.y = body.GetPosition().y * this.SCALE - data.height / 2;
 
         data.x = body.GetPosition().x * this.SCALE;
         data.y = body.GetPosition().y * this.SCALE;
 
+        // Keep track of the player box2d body object
         this.playersB2d.set(data.playerId, body);
+        // keep track of the player entity
         this.players.set(data.playerId, new EntityCollection.HawtPlayer(data));
-        // var currplayers = '';
-        // this.players.forEach(function(ele, index, array){
-        //     currplayers += ele.playerId + ', ';
-        // });
-        // console.log('Current players: ' + currplayers + '\n');
     }
 
     GameWorld.prototype.removePlayer = function (data) {
@@ -280,9 +240,14 @@
         this.players.delete(data.playerId);
 
         // destory body from the world
-        this.b2dWorld.DestroyBody(this.playersB2d.get(data.playerId)); // this line causing the disconnects.
+        this.b2dWorld.DestroyBody(this.playersB2d.get(data.playerId));
         this.playersB2d.delete(data.playerId);
         // console.log('Player ' + data.playerId + ' has been removed.\n');
+    }
+
+    GameWorld.prototype.startTheGame = function (data) {
+        this.gameStarted = !this.gameStarted;
+        while(Date.now() < data.time);
     }
 
    // Things to start the game.
@@ -291,10 +256,11 @@
         var that = this;
         (function gameLoop() {
             if(that.gameStarted) {
-                // Initialize vars for looping the game.
+
             } else {
                 // Initialize vars for looping lobby?
             }
+            // Initialize vars for looping the game.
             that.loop();
             exports.requestAnimFrame(gameLoop);
         })();
@@ -308,7 +274,7 @@
     GameWorld.prototype.update = function () {
         /** Update the b2dWorld **/
         this.b2dWorld.Step(
-            1 / 60   //frame-rate
+            1 / 60      //frame-rate
             ,  10       //velocity iterations
             ,  10       //position iterations
         );
@@ -325,20 +291,33 @@
         /** Player Updates **/
         this.players.forEach(function(player) {
             var body = that.playersB2d.get(player.playerId);
+            var vel = body.GetLinearVelocity();
+            var desiredVel = 0;
             if (player.isMoving) {
-                // var vel = body.GetLinearVelocity();
-                // float desireVel = 0;
-                
-                body.SetLinearVelocity(
-                    new Box2D.Common.Math.b2Vec2(
-                        (player.moveSpeed / that.SCALE * player.direction), 
-                        body.GetLinearVelocity().y
-                    )
-                );
+                if (player.direction < 0) desiredVel = -5;
+                if (player.direction > 0) desiredVel = 5;
             }
+            var velChange = desiredVel - vel.x;
+            var impulse = body.GetMass() * velChange;
+            body.ApplyImpulse(
+                new Box2D.Common.Math.b2Vec2(impulse, 0), 
+                body.GetWorldCenter()
+            );
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
-            
+            // if (!player.isReady)
+            // console.log('=====================================\n'
+            //             + 'Tick Count: ' + that.timer.counter + '\n'
+            //             + 'PlayerID ' + player.playerId + '\n'
+            //             + 'vel = (' + vel.x + ', ' + vel.y + ')\n' 
+            //             + 'desiredVel = ' + desiredVel + '\n' 
+            //             + 'velChange = ' + velChange + '\n' 
+            //             + 'impulse = ' + impulse + '\n' 
+            //             + 'mass = ' + body.GetMass() + '\n' 
+            //             + 'player.x = ' + player.x + '\n' 
+            //             + 'player.y = ' + player.y + '\n' 
+            //             + '====================================='
+            //             );
             // console.log('The x,y is (' + player.x + ',' + player.y + ')');
         });
     }

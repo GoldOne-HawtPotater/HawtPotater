@@ -23,7 +23,6 @@ module.exports = function(app,io){
 	});
 
 	app.get('/game/:id', function(req,res){
-
 		// Render the game.html view
 		res.render('game');
 	});
@@ -70,13 +69,6 @@ module.exports = function(app,io){
 		        }, syncDelayInMilli));
 			}
 		    if (room.length < 4) {
-		    	// var playerId = undefined;
-		    	// do {
-		    	// 	playerId = gameworlds.get(roomId).players.size;
-		    	// 	if (gameworlds.get(roomId).players.has(playerId)) {
-		    	// 		playerId = undefined;
-		    	// 	}
-		    	// } while (!playerId);
 				socket.emit('joingame', {
 					playerId: Date.now(),
 					thePlayers: gameworlds.get(roomId).players
@@ -158,10 +150,12 @@ module.exports = function(app,io){
 			socket.broadcast.to(socket.room).emit('receive_gameworld_update', data);
 		});
 
-		// socket.on('error', function (err) {
-		//   if (err.description) throw err.description;
-		//   else throw err; // Or whatever you want to do
-		// });
+		socket.on('update_gameserver', function(data) {
+			if (gameworlds.get(socket.room)) {
+				gameworlds.get(socket.room).callFunc(data);
+				io.to(socket.room).emit('receive_gameworld_update', data);	
+			}
+		});
 
 		socket.on('error', function (err) {
 			if (err.description) {
