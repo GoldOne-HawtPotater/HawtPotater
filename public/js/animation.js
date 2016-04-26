@@ -51,3 +51,51 @@ Animation.prototype.currentFrame = function () {
 Animation.prototype.isDone = function () {
     return (this.elapsedTime >= this.totalTime);
 }
+
+/** Use this Animation when we switch sprites. (Look inside assetmgr.js for more Animation/Asset code and examples.)
+
+function Animation(spriteSheetName, frames, frameDuration, loop, reverse) {
+    this.spriteSheetName = spriteSheetName;
+    this.frameDuration = frameDuration;
+    this.frames = frames;
+    this.totalTime = frameDuration * frames;
+    this.elapsedTime = 0;
+    this.loop = loop;
+    this.reverse = reverse;
+}
+
+Animation.prototype.drawFrame = function (tick, ctx, x, y, flipH, flipV) {
+    var scaleH = flipH ? flipH : 1, // Set horizontal scale to -1 if flip horizontal
+        scaleV = flipV ? flipV : 1; // Set verical scale to -1 if flip vertical
+    this.elapsedTime += tick;
+    if (this.loop) {
+        if (this.isDone()) {
+            this.reset();
+        }
+    } else if (this.isDone()) {
+        return;
+    }
+
+    var index = this.reverse ? this.frames - this.currentFrame() - 1 : this.currentFrame();
+    var image = ASSET_MANAGER.getAsset(this.spriteSheetName + '_' + index + '.png');
+
+    ctx.scale(scaleH, scaleV);
+    ctx.drawImage(image, x * scaleH, y * scaleV);
+}
+
+Animation.prototype.drawImage = function (ctx, x, y, flipH, flipV) {
+    var scaleH = flipH ? flipH : 1, // Set horizontal scale to -1 if flip horizontal
+        scaleV = flipV ? flipV : 1; // Set verical scale to -1 if flip vertical
+    ctx.scale(scaleH, scaleV);
+    ctx.drawImage(ASSET_MANAGER.getAsset(this.spriteSheetName + '.png'), x, y);
+}
+
+Animation.prototype.currentFrame = function () {
+    return Math.floor(this.elapsedTime / this.frameDuration);
+}
+
+Animation.prototype.isDone = function () {
+    return (this.elapsedTime >= this.totalTime);
+}
+
+**/

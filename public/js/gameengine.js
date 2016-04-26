@@ -1,173 +1,288 @@
-// The game engine code.
-// window.requestAnimFrame = (function () {
-//     return window.requestAnimationFrame ||
-//             window.webkitRequestAnimationFrame ||
-//             window.mozRequestAnimationFrame ||
-//             window.oRequestAnimationFrame ||
-//             window.msRequestAnimationFrame ||
-//             function (/* function */ callback, /* DOMElement */ element) {
-//                 window.setTimeout(callback, 1000 / 60);
-//             };
-// })();
-
-// function GameEngine() {
-//     this.entities = [];
-//     this.ctx = null;
-//     this.gameworld = null;
-//     this.click = null;
-//     this.mouse = null;
-//     this.wheel = null;
-//     this.surfaceWidth = null;
-//     this.surfaceHeight = null;
-// }
-
-// GameEngine.prototype.init = function (ctx, gw) {
-//     this.ctx = ctx;
-//     this.gameworld = gw;
-//     this.surfaceWidth = this.ctx.canvas.width;
-//     this.surfaceHeight = this.ctx.canvas.height;
-//     this.startInput();
-
-//     console.log('game engine initialized');
-// }
-
-// GameEngine.prototype.start = function () {
-//     console.log("start the game engine loop");
-//     var that = this;
-//     (function gameLoop() {
-//         if(that.gameIsPlaying) {
-
-//         } else {
-
-//         }
-//         that.loop();
-//         requestAnimFrame(gameLoop, that.ctx.canvas);
-//     })();
-// }
-
-// GameEngine.prototype.startTheGame = function() {
-//     console.log('The game is starting!');
-//     this.gameIsPlaying = true;
-// }
-
-// GameEngine.prototype.startInput = function () {
-//     console.log('Starting input');
-//     var that = this;
-
-//     var getXandY = function (e) {
-//         var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
-//         var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
-
-//         if (x < 1024) {
-//             x = Math.floor(x / 32);
-//             y = Math.floor(y / 32);
-//         }
-
-//         return { x: x, y: y };
-//     }
-
-//     // this.ctx.canvas.addEventListener("click", function (e) {
-//     //     that.click = getXandY(e);
-//     // }, false);
-
-//     // this.ctx.canvas.addEventListener("mousemove", function (e) {
-//     //     that.mouse = getXandY(e);
-//     // }, false);
-
-//     // this.ctx.canvas.addEventListener("mousewheel", function (e) {
-//     //     that.wheel = e;
-//     // }, false);
-
-//     /** Set up the key listeners **/
-
-//     // Move to game engine.
-//     var gamescreen = $('#gameWorldCanvas')
-//                     .attr("tabindex", "0");
-
-//     gamescreen.keydown(function(e) {
-//        var key = e.which;
-//        switch(key) {
-//             case 37: //left
-//             case 38: //up
-//             case 39: //right
-//             case 40: //down
-//                 var data = {
-//                     theFunc: 'move',
-//                     playerId: that.playerId,
-//                     direction: key
-//                 };
-//                 socket.emit('update_gameworld', data);
-//                 that.gameworld.move(data);
-//                 break;
-//             case 49: // {1 key}
-//                 var data = {
-//                     theFunc: 'toggleReady',
-//                     playerId: that.playerId
-//                 };
-//                 socket.emit('update_gameworld', data)
-//                 that.gameworld.toggleReady(data);
-//                 break;
-//        }
-//     });
-
-//     gamescreen.keyup(function(e) {
-//        var key = e.which; 
-//        switch(key) {
-//             case 37: //left
-//                 break;
-//             case 38: //up
-//                 break;
-//             case 39: //right
-//                 break;
-//             case 40: //down
-//                 break;
-//        }
-//     });
-
-//     console.log('Input started');
-// }
+(function (exports, isClient) {
+      ///////////////////////////////////////////////////
+     /******************* Setup Code ******************/
+    ///////////////////////////////////////////////////
+    var Box2D = isClient ? window.Box2D : require('./box2d.js').Box2D;
+    
+    var Map = isClient ? window.Map : require('collections/map');
+    
+    var EntityCollection = isClient ? window.EntityCollection : require('./entity').EntityCollection;
+    
+    var Entity = EntityCollection.Entity,
+        HawtPlayer = EntityCollection.HawtPlayer,
+        Background = EntityCollection.Background,
+        Potato = EntityCollection.Potato;
 
 
-// GameEngine.prototype.addEntity = function (entity) {
-//     console.log('added entity');
-//     this.entities.push(entity);
-// }
+      /////////////////////////////////////////////////
+     /*************** GameEngine Class **************/
+    /////////////////////////////////////////////////
+    var GameEngine = function () {
+        this.players = new Map();
+        this.playersB2d = new Map();
+        this.entities = new Map();
+        this.entitiesB2d = new Map();
+        this.surfaceWidth = 1280;
+        this.surfaceHeight = 720;
+        this.SCALE = 30;
+
+        // Create a new box2d world
+        this.b2dWorld = new Box2D.Dynamics.b2World(
+            new Box2D.Common.Math.b2Vec2(0, 10)   // gravity
+            , true                                // allow sleeping bodies
+        ); 
+        // Create the platforms
+        this.createPlatforms();
+    };
+
+    GameEngine.prototype.update = function () {
+        /** Update the b2dWorld **/
+        this.b2dWorld.Step(
+            1 / 60      //frame-rate
+            ,  10       //velocity iterations
+            ,  10       //position iterations
+        );
+
+        /** Random Entities Update **/
+        var that = this;
+        this.entities.forEach(function(entity) {
+            var body = that.entitiesB2d.get(entity.id);
+            entity.x = body.GetPosition().x * that.SCALE - entity.width / 2;
+            entity.y = body.GetPosition().y * that.SCALE - entity.height / 2;
+            // console.log('The x,y is (' + player.x + ',' + player.y + ')');
+        });
+
+        /** Player Updates **/
+        this.players.forEach(function(player) {
+            var body = that.playersB2d.get(player.playerId);
+            var vel = body.GetLinearVelocity();
+            var desiredVel = 0;
+            if (player.isMoving) {
+                if (player.direction < 0) desiredVel = -5;
+                if (player.direction > 0) desiredVel = 5;
+            }
+            var velChange = desiredVel - vel.x;
+            var impulse = body.GetMass() * velChange;
+            body.ApplyImpulse(
+                new Box2D.Common.Math.b2Vec2(impulse, 0), 
+                body.GetWorldCenter()
+            );
+            player.x = body.GetPosition().x * that.SCALE - player.width / 2;
+            player.y = body.GetPosition().y * that.SCALE - player.height / 2;
+
+            // if (player.isMoving)
+            //     console.log('=====================================\n'
+            //                 + 'PlayerID ' + player.playerId + '\n'
+            //                 + 'vel = (' + vel.x + ', ' + vel.y + ')\n' 
+            //                 + 'desiredVel = ' + desiredVel + '\n' 
+            //                 + 'velChange = ' + velChange + '\n' 
+            //                 + 'impulse = ' + impulse + '\n' 
+            //                 + 'mass = ' + body.GetMass() + '\n' 
+            //                 + 'player.x = ' + player.x + '\n' 
+            //                 + 'player.y = ' + player.y + '\n' 
+            //                 + '====================================='
+            //                 );
+            if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 / 60 / 24 / 365 + ' - The x,y is (' + player.x + ',' + player.y + ')');
+
+        });
+    };
 
 
+      /////////////////////////////////////////////////
+     /**************** Creation Code ****************/
+    /////////////////////////////////////////////////
+    GameEngine.prototype.createPlatforms = function() {
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 1.0;
+        fixDef.friction = 0.5;
+        fixDef.restitution = 0.2;
+        // Create the ground
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
+        // position the center of the object
+        bodyDef.position.x = this.surfaceWidth / 2 / this.SCALE;
+        bodyDef.position.y = (this.surfaceHeight / this.SCALE) - 1;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox((this.surfaceWidth / this.SCALE) / 2, 0.5 / 2);
+        this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
+    };
 
-// GameEngine.prototype.draw = function (drawCallback) {
-//     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-//     this.ctx.save();
-//     for (var i = 0; i < this.entities.length; i++) {
-//         this.entities[i].draw(this.ctx);
-//     }
-//     if (drawCallback) {
-//         drawCallback(this);
-//     }
-//     this.ctx.restore();
-// }
+    GameEngine.prototype.addPlayer = function (data) {
+        // Specify a player body definition
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        bodyDef.fixedRotation = true
 
-// GameEngine.prototype.update = function () {
-//     var entitiesCount = this.entities.length;
+        // fixture definition and shape definition for fixture
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 1;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox(
+            185 / 2 / this.SCALE,
+            164 / 2 / this.SCALE
+            );
+        fixDef.friction = 1;
+        fixDef.restitution = 0.2;
+        
 
-//     for (var i = 0; i < entitiesCount; i++) {
-//         var entity = this.entities[i];
+        // create dynamic body
+        if (data.x && data.y && data.width && data.height) {
+            // If we're passing 
+            bodyDef.position.x = data.x / this.SCALE + (data.width / this.SCALE / 2);
+            bodyDef.position.y = data.y / this.SCALE + (data.height / this.SCALE / 2);
+        } else {
+            bodyDef.position.x = 200 / this.SCALE;
+            bodyDef.position.y = 50 / this.SCALE;
+        }
+        var body = this.b2dWorld.CreateBody(bodyDef);
+        body.SetSleepingAllowed(false);
 
-//         if (!entity.removeFromWorld) {
-//             entity.update();
-//         }
-//     }
+        // Add the fixture
+        body.CreateFixture(fixDef); 
 
-//     for (var i = this.entities.length - 1; i >= 0; --i) {
-//         if (this.entities[i].removeFromWorld) {
-//             this.entities.splice(i, 1);
-//         }
-//     }
-// }
+        // Add foot sensor fixture
+        // ... implement the foot fixture & body
+        // ...
 
-// GameEngine.prototype.loop = function () {
-//     this.update();
-//     this.draw();
-//     this.click = null;
-//     this.wheel = null;
-// }
+        // Set the entity x, y values.
+        data.x = body.GetPosition().x * this.SCALE;
+        data.y = body.GetPosition().y * this.SCALE;
+
+        // Keep track of the player box2d body object
+        this.playersB2d.set(data.playerId, body);
+        // keep track of the player entity
+        this.players.set(data.playerId, new HawtPlayer(data));
+    };
+
+    GameEngine.prototype.removePlayer = function (data) {
+        // remove the player from the player map
+        this.players.delete(data.playerId);
+
+        // destory body from the world
+        this.b2dWorld.DestroyBody(this.playersB2d.get(data.playerId));
+        this.playersB2d.delete(data.playerId);
+        // console.log('Player ' + data.playerId + ' has been removed.\n');
+    };
+
+    GameEngine.prototype.addPotato = function (data) {
+         // Specify a player body definition
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+
+                // fixture definition and shape definition for fixture
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 0.5;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox(
+            30 / 2 / this.SCALE,
+            27 / 2 / this.SCALE
+            );
+        fixDef.friction = 1;
+        fixDef.restitution = 0.7;
+
+        bodyDef.position.x = 200 / this.SCALE;
+        bodyDef.position.y = 50 / this.SCALE;
+
+        var body = this.b2dWorld.CreateBody(bodyDef);
+        body.SetSleepingAllowed(false);
+
+        body.CreateFixture(fixDef); 
+
+        //data.x = body.GetPosition().x * this.SCALE;
+        //data.y = body.GetPosition().y * this.SCALE;
+
+        var potato = new EntityCollection.Potato({
+            x: 200,
+            y: 50
+        });
+        this.entities.set(potato.id, potato);
+        this.entitiesB2d.set(potato.id, body);
+    };
+
+
+      /////////////////////////////////////////////////
+     /**************** Modifier Code ****************/
+    /////////////////////////////////////////////////
+    GameEngine.prototype.attack = function (data) {};
+
+    GameEngine.prototype.jumpPlayer = function (data) {
+        console.log(data.playerId + ' is attempting a jump.');
+        if (data) {
+            var player = this.players.get(data.playerId);
+            var playerBody = this.playersB2d.get(data.playerId);
+            // Need to set the airborn flag to true/false to use the correct animation
+            var velocity = playerBody.GetLinearVelocity();
+            velocity.y = 30;
+            playerBody.SetLinearVelocity(velocity);
+        }
+    };
+
+    GameEngine.prototype.dodge = function (data) {};
+
+    GameEngine.prototype.movePlayer = function (data) {
+        console.log(data.playerId + ' is moving ' + data.direction + '.');
+        if (data && data.direction) {
+            var player = this.players.get(data.playerId);
+            player.isMoving = data.value;
+            switch(data.direction) {
+                case 37: //left
+                    player.direction = -1;
+                    break;
+                case 39: //right
+                    player.direction = 1;
+                    break;
+            }
+            var playerBody = this.playersB2d.get(data.playerId);
+        }
+    };
+
+    GameEngine.prototype.toggleReady = function (data) {
+        this.players.get(data.playerId).isReady ^= true;
+        console.log('Player ' + data.playerId + ' is' + (this.players.get(data.playerId).isReady ? ' ' : ' not ') + 'ready.');
+        this.addPotato(data);
+    };
+
+      /////////////////////////////////////////////////
+     /**************** Synchro Code *****************/
+    /////////////////////////////////////////////////
+    GameEngine.prototype.syncThePlayers = function (data) {
+        // console.log('\nSyncing the worlds.');
+        if (data && data.length != 0) { 
+            var GE = this;
+            data.thePlayers.forEach(function(player, index, array) {
+                player = player[1];
+                // console.log('Checking player: ' + player);
+                if (GE.players.get(player.playerId)) {
+                    // console.log('Syncing a existing player.');
+                    // Player exist, update the player data.
+                    GE.players.get(player.playerId).syncEntity(player);
+                    var position = new Box2D.Common.Math.b2Vec2(
+                        player.x / GE.SCALE + (player.width / GE.SCALE / 2),
+                        player.y / GE.SCALE + (player.height / GE.SCALE / 2)
+                        );
+                    GE.playersB2d.get(player.playerId).SetPosition(position);
+                } else {
+                    // console.log('Sync a new player.');
+                    // Player does not exist. 
+                    GE.addPlayer(player);
+                }
+                // console.log('\n');
+            });
+        }
+    };
+
+
+      /////////////////////////////////////////////////
+     /**************** Helper Code ******************/
+    /////////////////////////////////////////////////
+    GameEngine.prototype.callFunc = function (data) {
+        if (data && data.theFunc) {
+            this[data.theFunc](data);
+        } else {
+            console.log('data.theFunc is undefined.');
+            console.log('GameEngine: ' + data + '\n');
+        }
+    };
+
+    exports.GameEngine = GameEngine;
+})(typeof global === "undefined" ? window : exports, typeof global === "undefined");

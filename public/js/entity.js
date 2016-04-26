@@ -55,8 +55,6 @@
 
     /** Hawt Potater Player Class **/
     var HawtPlayer = function(playerObj) {
-        // this.animation = new Animation(ASSET_MANAGER.getAsset("./img/RobotUnicorn.png"), 0, 0, 206, 110, 0.02, 30, true, true);
-        // this.jumpAnimation = new Animation(ASSET_MANAGER.getAsset("./img/RobotUnicorn.png"), 618, 334, 174, 138, 0.02, 40, false, true);
         if (isClient) {
             this.walkingAnimation = new Animation(ASSET_MANAGER.getAsset('../img/stolen_corgi_walk.png'), 185, 0, 185, 164, 0.225, 2, true, false);
         }
