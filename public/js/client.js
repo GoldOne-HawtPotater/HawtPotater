@@ -115,6 +115,14 @@ $(function(){
             ASSET_MANAGER.queueDownload("../img/stolen_corgi_walk.png");
             ASSET_MANAGER.queueDownload("../img/potato.png");
             //... Add more asssets below.
+            var numberOfFrames = 15;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/dog/stand_' + i + '.png');
+            }
+            numberOfFrames = 6;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/dog/move_' + i + '.png');
+            }
         };
 
         /** Download the assets **/

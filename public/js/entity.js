@@ -54,18 +54,15 @@
     }
 
     /** Hawt Potater Player Class **/
-    var HawtPlayer = function(playerObj) {
-        if (isClient) {
-            this.walkingAnimation = new Animation(ASSET_MANAGER.getAsset('../img/stolen_corgi_walk.png'), 185, 0, 185, 164, 0.225, 2, true, false);
-        }
+    var HawtPlayer = function(playerObj, width, height) {
         this.isJumping = false;
         this.isMoving = false;
         this.isMovingLeft = false;
         this.isMovingRight = false;
         this.direction = 1;
-        this.moveSpeed = 200;
-        this.width = 185;
-        this.height = 164;
+        // this.moveSpeed = 200;
+        this.width = playerObj.width;
+        this.height = playerObj.height;
         this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;
         this.playerId = playerObj.playerId;
         Entity.call(this, playerObj.x, playerObj.y, playerObj.playerId);
@@ -74,15 +71,8 @@
     HawtPlayer.prototype = new Entity();
     HawtPlayer.prototype.constructor = HawtPlayer;
 
-    HawtPlayer.prototype.update = function () {
-
-        Entity.prototype.update.call(this);
-    }
-
-    HawtPlayer.prototype.draw = function (ctx, clockTick) {
-        this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y);
-        Entity.prototype.draw.call(this);
-    }
+    HawtPlayer.prototype.update = function () {}
+    HawtPlayer.prototype.draw = function (ctx, clockTick) {}
 
     HawtPlayer.prototype.toggleReady = function() {
         this.isReady = !this.isReady;
@@ -96,9 +86,41 @@
         }
     }
 
+    var HawtDogge = function(playerObj) {
+        if (isClient) {
+            this.standingAnimation = new Animation(('../img/animals/dog/stand'), 15, 120, true);
+            this.walkingAnimation = new Animation(('../img/animals/dog/move'), 6, 120, true);
+        }
+        playerObj.width = 83;
+        playerObj.height = 52;
+        HawtPlayer.call(this, playerObj);
+    }
+
+    HawtDogge.prototype = new HawtPlayer({
+        width: 83,
+        height: 52
+    });
+
+    HawtDogge.prototype.constructor = HawtDogge;
+
+    HawtDogge.prototype.draw = function (ctx, clockTick) {
+        // Reset the animations if they're not running. 
+        // if (this.isMoving) this.standingAnimation.reset();
+        if (!this.isMoving) this.walkingAnimation.reset();
+
+        // Play the correct animation
+        // Image is originally left we need to multiply by -1. (-1 = left, 1 = right). 
+        if (this.isMoving) {
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        } else {
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        }
+        // HawtPlayer.prototype.draw.call(this, ctx, clockTick);
+    }
+
     var Potato = function(potatoData) {
         if (isClient) {
-            this.sprite = new Animation(ASSET_MANAGER.getAsset('../img/potato.png'), 0, 0, 30, 27, 0.225, 1, true, false);
+            this.sprite = new Animation(('../img/potato'), 1);
         }
         this.width = 30;
         this.height = 27;
@@ -114,7 +136,8 @@
     }
 
     Potato.prototype.draw = function(ctx, clockTick) {
-        this.sprite.drawFrame(clockTick, ctx, this.x, this.y);
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
     }
 
     Potato.prototype.syncEntity = function(entity) {
@@ -127,6 +150,7 @@
     EntityCollection.HawtPlayer = HawtPlayer;
     EntityCollection.Background = Background;
     EntityCollection.Potato = Potato;
+    EntityCollection.HawtDogge = HawtDogge;
 
     // Set the entity collection for our clients/server.
     exports.EntityCollection = EntityCollection;

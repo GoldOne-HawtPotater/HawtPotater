@@ -11,7 +11,8 @@
     var Entity = EntityCollection.Entity,
         HawtPlayer = EntityCollection.HawtPlayer,
         Background = EntityCollection.Background,
-        Potato = EntityCollection.Potato;
+        Potato = EntityCollection.Potato,
+        HawtDogge = EntityCollection.HawtDogge;
 
 
       /////////////////////////////////////////////////
@@ -87,7 +88,7 @@
             //                 + 'player.y = ' + player.y + '\n' 
             //                 + '====================================='
             //                 );
-            if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 + ' - The x,y is (' + player.x + ',' + player.y + ')');
+            // if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 + ' - The x,y is (' + player.x + ',' + player.y + ')');
         });
         // console.log('Clock tick = ' + that.clockTick);
     };
@@ -118,13 +119,18 @@
         bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
         bodyDef.fixedRotation = true
 
+        // var width, height;
+        // if (dog) {
+        //      width = 83; height = 52;
+        // }
+
         // fixture definition and shape definition for fixture
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
         fixDef.density = 1;
         fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
         fixDef.shape.SetAsBox(
-            185 / 2 / this.SCALE,
-            164 / 2 / this.SCALE
+            83 / 2 / this.SCALE,
+            52 / 2 / this.SCALE
             );
         fixDef.friction = 1;
         fixDef.restitution = 0.2;
@@ -156,7 +162,7 @@
         // Keep track of the player box2d body object
         this.playersB2d.set(data.playerId, body);
         // keep track of the player entity
-        this.players.set(data.playerId, new HawtPlayer(data));
+        this.players.set(data.playerId, new HawtDogge(data));
     };
 
     GameEngine.prototype.removePlayer = function (data) {
@@ -196,7 +202,7 @@
         //data.x = body.GetPosition().x * this.SCALE;
         //data.y = body.GetPosition().y * this.SCALE;
 
-        var potato = new EntityCollection.Potato({
+        var potato = new Potato({
             x: 200,
             y: 50
         });
@@ -243,7 +249,7 @@
                     player.direction = 1;
                     break;
             }
-            var playerBody = this.playersB2d.get(data.playerId);
+            // var playerBody = this.playersB2d.get(data.playerId);
         }
     };
 

@@ -91,15 +91,23 @@ module.exports = function(app,io){
 		});
 
 		socket.on('update_gameengine', function() {
+			// Update the server game engine when the game master updates.
 			if  (listofgames.get(socket.roomId) && socket.roomMaster) {
 				listofgames.get(socket.roomId).update();
 			}
 		});
 
+
 		socket.on('disconnect', function() {
 			console.log(socket.roomId);
+
 			var roomId = this.roomId;
 			console.log(this.playerId + ' has left room ' + roomId + '.');
+
+			if (socket.roomMaster) {
+				// Need to notify everyone that the room master disconnected. 
+				socket.broadcast.to(roomId).emit('roommasterleft');
+			}
 
 			var data = {
 				theFunc: 'removePlayer',
