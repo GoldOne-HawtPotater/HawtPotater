@@ -16,6 +16,11 @@ $(function(){
     // The user player id
     var myPlayerId;
 
+    // A flag to see if you are the room master
+    var roomMaster = false;
+
+    var that = this;
+
     function startInput() {
         console.log('Starting input');
         // Disable scroll keys
@@ -116,9 +121,9 @@ $(function(){
         queueDownloads();
         ASSET_MANAGER.downloadAll(function () {
             startInput();
-            gameworld.init(ctx);
-            gameworld.start();
             myPlayerId = Date.now();
+            gameworld.init(ctx, socket);
+            gameworld.start();
             // This is called when the page loads.
             var data = {
                 theFunc: 'addPlayer',
@@ -128,8 +133,6 @@ $(function(){
             socket.emit('joingameroom', data);
             // Add the player to our own gameworld
             gameworld.gameEngine.addPlayer(data);
-            // gameworld.syncThePlayers(data.thePlayers);
-            // gameworld.start();
             console.log('This browser id is ' + data.playerId);
         });
     });
@@ -139,6 +142,12 @@ $(function(){
             gameworld.gameEngine.callFunc(data);
         } else {
             console.log('receive_gameworld_update failed. Data is ' + data + '\n');
+        }
+    });
+
+    socket.on('setroommaster', function(data) {
+        if (data.playerId == myPlayerId) {
+            gameworld.roomMasterWorld = true;
         }
     });
 });

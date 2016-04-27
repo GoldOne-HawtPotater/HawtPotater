@@ -45,10 +45,15 @@ module.exports = function(app,io){
 			var gameRoom = findClientsSocket(io, data.roomId);
 			if (gameRoom.length == 0) {
 				listofgames.set(data.roomId, new GameEngine());
-				gameLoopTimer.set(data.roomId, setInterval(function () {
-					// Update the game engine
-					listofgames.get(data.roomId).update();
-				}, 1000/60));
+				socket.roomMaster = true;
+				socket.emit('setroommaster', {
+					playerId: data.playerId
+				});
+				// var engine = listofgames.get(data.roomId);
+				// gameLoopTimer.set(data.roomId, setInterval(function () {
+				// 	// Update the game engine
+				// 	engine.update();
+				// }, 1000/60));
 			}
 
 
@@ -83,6 +88,12 @@ module.exports = function(app,io){
 				theFunc: 'syncThePlayers',
 				thePlayers: listofgames.get(socket.roomId).players
 			});
+		});
+
+		socket.on('update_gameengine', function() {
+			if  (listofgames.get(socket.roomId) && socket.roomMaster) {
+				listofgames.get(socket.roomId).update();
+			}
 		});
 
 		socket.on('disconnect', function() {

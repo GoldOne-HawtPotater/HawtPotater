@@ -25,6 +25,8 @@
         this.surfaceWidth = 1280;
         this.surfaceHeight = 720;
         this.SCALE = 30;
+        this.clockTick = 0;
+        this.timer = new Timer();
 
         // Create a new box2d world
         this.b2dWorld = new Box2D.Dynamics.b2World(
@@ -36,6 +38,7 @@
     };
 
     GameEngine.prototype.update = function () {
+        this.clockTick = this.timer.tick();
         /** Update the b2dWorld **/
         this.b2dWorld.Step(
             1 / 60      //frame-rate
@@ -58,15 +61,17 @@
             var vel = body.GetLinearVelocity();
             var desiredVel = 0;
             if (player.isMoving) {
-                if (player.direction < 0) desiredVel = -5;
-                if (player.direction > 0) desiredVel = 5;
+                if (player.direction < 0) desiredVel = -3;
+                if (player.direction > 0) desiredVel = 3;
             }
             var velChange = desiredVel - vel.x;
-            var impulse = body.GetMass() * velChange;
+            var impulse = body.GetMass() * velChange
             body.ApplyImpulse(
                 new Box2D.Common.Math.b2Vec2(impulse, 0), 
                 body.GetWorldCenter()
             );
+            // var pos = body.GetPosition();
+            // body.SetPosition(new Box2D.Common.Math.b2Vec2(pos.x + desiredVel, pos.y));
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
 
@@ -82,9 +87,9 @@
             //                 + 'player.y = ' + player.y + '\n' 
             //                 + '====================================='
             //                 );
-            if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 / 60 / 24 / 365 + ' - The x,y is (' + player.x + ',' + player.y + ')');
-
+            if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 + ' - The x,y is (' + player.x + ',' + player.y + ')');
         });
+        // console.log('Clock tick = ' + that.clockTick);
     };
 
 
@@ -210,7 +215,13 @@
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
-            // Need to set the airborn flag to true/false to use the correct animation
+            //** Jump using impulse and velocity
+            // var impulse = playerBody.GetMass() * 30;
+            // playerBody.ApplyImpulse(
+            //     new Box2D.Common.Math.b2Vec2(0, impulse),
+            //     playerBody.GetWorldCenter());
+
+            //** Jump using velocity
             var velocity = playerBody.GetLinearVelocity();
             velocity.y = 30;
             playerBody.SetLinearVelocity(velocity);
@@ -283,6 +294,24 @@
             console.log('GameEngine: ' + data + '\n');
         }
     };
+
+    function Timer() {
+        this.gameTime = 0;
+        this.maxStep = 0.05;
+        this.wallLastTimestamp = 0;
+        this.counter = 0;
+    }
+
+    Timer.prototype.tick = function () {
+        this.counter++;
+        var wallCurrent = Date.now();
+        var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
+        this.wallLastTimestamp = wallCurrent;
+
+        var gameDelta = Math.min(wallDelta, this.maxStep);
+        this.gameTime += gameDelta;
+        return gameDelta;
+    }
 
     exports.GameEngine = GameEngine;
 })(typeof global === "undefined" ? window : exports, typeof global === "undefined");
