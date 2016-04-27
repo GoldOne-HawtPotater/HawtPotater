@@ -62,8 +62,8 @@
             var vel = body.GetLinearVelocity();
             var desiredVel = 0;
             if (player.isMoving) {
-                if (player.direction < 0) desiredVel = -3;
-                if (player.direction > 0) desiredVel = 3;
+                if (player.direction < 0) desiredVel = -10;
+                if (player.direction > 0) desiredVel = 10;
             }
             var velChange = desiredVel - vel.x;
             var impulse = body.GetMass() * velChange
@@ -101,7 +101,7 @@
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
         fixDef.density = 1.0;
         fixDef.friction = 0.5;
-        fixDef.restitution = 0.2;
+        fixDef.restitution = 0;
         // Create the ground
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
         bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
@@ -132,8 +132,8 @@
             83 / 2 / this.SCALE,
             52 / 2 / this.SCALE
             );
-        fixDef.friction = 1;
-        fixDef.restitution = 0.2;
+        fixDef.friction = 0;
+        fixDef.restitution = 0;
         
 
         // create dynamic body
@@ -222,15 +222,15 @@
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
             //** Jump using impulse and velocity
-            // var impulse = playerBody.GetMass() * 30;
-            // playerBody.ApplyImpulse(
-            //     new Box2D.Common.Math.b2Vec2(0, impulse),
-            //     playerBody.GetWorldCenter());
+            var impulse = playerBody.GetMass() * 10* -1;
+            playerBody.ApplyImpulse(
+                new Box2D.Common.Math.b2Vec2(0, impulse),
+                playerBody.GetWorldCenter());
 
             //** Jump using velocity
-            var velocity = playerBody.GetLinearVelocity();
-            velocity.y = 30;
-            playerBody.SetLinearVelocity(velocity);
+            // var velocity = playerBody.GetLinearVelocity();
+            // velocity.y = -10;
+            // playerBody.SetLinearVelocity(velocity);
         }
     };
 

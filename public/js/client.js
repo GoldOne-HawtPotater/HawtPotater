@@ -56,10 +56,10 @@ $(function(){
                         playerId: myPlayerId,
                         value: true
                     };
-                    if (gameworld.gameEngine.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
+                    // if (gameworld.gameEngine.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
                         socket.emit('server_update', data)
                         // gameworld.gameEngine.jumpPlayer(data);
-                    }
+                    // }
                     break;
                 case 37: //left
                 case 39: //right
