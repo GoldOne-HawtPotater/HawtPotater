@@ -53,6 +53,34 @@
         Entity.prototype.draw.call(this);
     }
 
+    /** Multi-Jump Power Up Class **/
+    var MultiJumpPowerUp = function (powerUpData) {
+        if (isClient) {
+            this.sprite = new Animation(('../img/powerups/jump'), 1);
+        }
+        this.width = 64;
+        this.height = 64;
+        this.rotation = 0;
+        Entity.call(this, powerUpData.x, powerUpData.y, Date.now());
+    }
+
+    MultiJumpPowerUp.prototype = new Entity();
+    MultiJumpPowerUp.prototype.constructor = MultiJumpPowerUp;
+
+    MultiJumpPowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    MultiJumpPowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    MultiJumpPowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
+
     /** Hawt Potater Player Class **/
     var HawtPlayer = function(playerObj, width, height) {
         this.isJumping = false;
@@ -147,6 +175,7 @@
 
     // Add entities to the collection.
     EntityCollection.Entity = Entity;
+    EntityCollection.MultiJumpPowerUp = MultiJumpPowerUp;
     EntityCollection.HawtPlayer = HawtPlayer;
     EntityCollection.Background = Background;
     EntityCollection.Potato = Potato;

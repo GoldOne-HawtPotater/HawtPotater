@@ -12,7 +12,8 @@
         HawtPlayer = EntityCollection.HawtPlayer,
         Background = EntityCollection.Background,
         Potato = EntityCollection.Potato,
-        HawtDogge = EntityCollection.HawtDogge;
+        HawtDogge = EntityCollection.HawtDogge,
+        MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp;
 
 
       /////////////////////////////////////////////////
@@ -175,6 +176,42 @@
         // console.log('Player ' + data.playerId + ' has been removed.\n');
     };
 
+    GameEngine.prototype.addPowerUps = function (data) {
+        // Specify a player body definition
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        bodyDef.fixedRotation = true;
+
+        // fixture definition and shape definition for fixture
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 0.5;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox(
+            64 / 2 / this.SCALE,
+            64 / 2 / this.SCALE
+            );
+        fixDef.friction = 1;
+        fixDef.restitution = 0.9875;
+
+        bodyDef.position.x = 450 / this.SCALE;
+        bodyDef.position.y = 50 / this.SCALE;
+
+        var body = this.b2dWorld.CreateBody(bodyDef);
+        body.SetSleepingAllowed(false);
+
+        body.CreateFixture(fixDef);
+
+        //data.x = body.GetPosition().x * this.SCALE;
+        //data.y = body.GetPosition().y * this.SCALE;
+
+        var powerUp = new MultiJumpPowerUp({
+            x: 450,
+            y: 50
+        });
+        this.entities.set(powerUp.id, powerUp);
+        this.entitiesB2d.set(powerUp.id, body);
+    }
+
     GameEngine.prototype.addPotato = function (data) {
          // Specify a player body definition
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
@@ -189,7 +226,7 @@
             27 / 2 / this.SCALE
             );
         fixDef.friction = 1;
-        fixDef.restitution = 0.7;
+        fixDef.restitution = 0.9575;
 
         bodyDef.position.x = 200 / this.SCALE;
         bodyDef.position.y = 50 / this.SCALE;

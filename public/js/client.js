@@ -50,6 +50,13 @@ $(function(){
                     };
                     socket.emit('server_update', data)
                     break;
+                case 50: // {2} key, testing code to spawn powerUp
+                    data = {
+                        theFunc: 'addPowerUps',
+                        playerId: myPlayerId
+                    };
+                    socket.emit('server_update', data)
+                    break;
                 case 32: // spacebar (jump)
                     data = {
                         theFunc: 'jumpPlayer',
@@ -114,6 +121,7 @@ $(function(){
         var queueDownloads = function() {
             ASSET_MANAGER.queueDownload("../img/stolen_corgi_walk.png");
             ASSET_MANAGER.queueDownload("../img/potato.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             //... Add more asssets below.
             var numberOfFrames = 15;
             for (var i = 0; i < numberOfFrames; i++) {
