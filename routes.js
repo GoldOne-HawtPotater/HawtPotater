@@ -23,7 +23,6 @@ module.exports = function(app,io){
 	});
 
 	app.get('/game/:id', function(req,res){
-
 		// Render the game.html view
 		res.render('game');
 	});
@@ -33,143 +32,103 @@ module.exports = function(app,io){
 
 	/** Game Server **/
 	// var Entity = require('./public/js/entity').Entity;
-	var GameWorld = require('./public/js/gameworld').GameWorld;
-    var gameworlds = new Map();
+	var GameEngine = require('./public/js/gameengine').GameEngine;
+    var listofgames = new Map();
+	// Keep a reference so we can stop the sync.
+	var gameLoopTimer = new Map();
+
 
 	// Initialize a new socket.io application, named 'hawtSocket'
 	var hawtSocket = io.on('connection', function (socket) {
-		// Keep a reference so we can stop the sync.
-		var gameSyncTimer = new Map();
-		// The delay in which we update everyone's gameworld.
-		var syncDelayInMilli = 5000;
-
 		// When the client emits the 'load' event, let them join the room.
-		socket.on('load',function(roomId){
-			var room = findClientsSocket(io,roomId);
-			if (room.length == 0) {
-				// Create a new game world for the room.
-				gameworlds.set(roomId, new GameWorld());
-				gameworlds.get(roomId).init();
-				gameworlds.get(roomId).start();
-				// Sync the game world with other players.
- 				gameSyncTimer.set(roomId, setInterval(function () {
- 					// Check if the players are ready to play.
- 					if (gameworlds.get(roomId) 
- 						&& gameworlds.get(roomId).playersAreReady() 
- 						&& !gameworlds.get(roomId).gameStarted
- 						&& gameworlds.get(roomId).players.length >= 2) {
- 						console.log('Game is starting for room #' + roomId + '\n');
-	        			gameworlds.get(roomId).gameStarted = true;
-	        			// io.to(roomId).emit('receive_player_update', {
-	        			// 	theFunc: 'startTheGame'
-	        			// });
-	        		}
- 					// Send the server room game world to clients.
-		        	io.to(roomId).emit('sync_players', gameworlds.get(roomId).players);
-		        }, syncDelayInMilli));
+		socket.on('joingameroom', function(data){
+			var gameRoom = findClientsSocket(io, data.roomId);
+			if (gameRoom.length == 0) {
+				listofgames.set(data.roomId, new GameEngine());
+				socket.roomMaster = true;
+				socket.emit('setroommaster', {
+					playerId: data.playerId
+				});
+				// var engine = listofgames.get(data.roomId);
+				// gameLoopTimer.set(data.roomId, setInterval(function () {
+				// 	// Update the game engine
+				// 	engine.update();
+				// }, 1000/60));
 			}
-		    if (room.length < 4) {
-		    	// var playerId = undefined;
-		    	// do {
-		    	// 	playerId = gameworlds.get(roomId).players.size;
-		    	// 	if (gameworlds.get(roomId).players.has(playerId)) {
-		    	// 		playerId = undefined;
-		    	// 	}
-		    	// } while (!playerId);
-				socket.emit('joingame', {
-					playerId: Date.now(),
-					thePlayers: gameworlds.get(roomId).players
-				});	
-		    } else {
-		    	// If there are too many players, emit the 'tooMany' event
-		    	// and take care of the situation in client.js
-		    	socket.emit('tooMany', {boolean: true});
-		    }
+
+
+			socket.playerId = data.playerId;
+			socket.roomId = data.roomId;
+
+			socket.join(data.roomId);
+
+			// Pass the current players.
+			socket.emit('client_update', {
+				theFunc: 'syncThePlayers',
+				thePlayers: listofgames.get(data.roomId).players
+			});
+
+			// Notify others to add you.
+			socket.broadcast.to(data.roomId).emit('client_update', data);
+
+			// Add you to the server.
+			listofgames.get(data.roomId).addPlayer(data);
 		});
 
-		// When the client emits 'login', save his name, 'and add them to the room
-		socket.on('login', function(data) {
-
-			var room = findClientsSocket(io, data.roomId);
-			// Only 4 people per room are allowed
-			if (room.length < 4) {
-
-				// Use the socket object to store data. Each client gets
-				// their own unique socket object
-				socket.playerId = data.playerId;
-				socket.room = data.roomId;
-
-				// Add the client to the room
-				socket.join(data.roomId);
-				// Tell server to add the user.
-				gameworlds.get(data.roomId).callFunc(data);
-				// Tell everyone else to add the user.
-				socket.broadcast.to(socket.room).emit('receive_gameworld_update', data);
-
-				console.log('Player ' + socket.playerId + ' has joined room ' + data.roomId + '.');
-				console.log('There is ' + (room.length + 1) + ' player(s) in room ' + data.roomId + '.\n');
+		socket.on('server_update', function(data) {
+			if (listofgames.get(socket.roomId)) {
+				listofgames.get(socket.roomId).callFunc(data);
+			} else {
+				console.log('Server game world does not exist. Room = ' + socket.room);
 			}
-			else {
-				socket.emit('tooMany', {boolean: true});
+			console.log('Updating everyone else.\n');
+			// socket.broadcast.to(socket.roomId).emit('client_update', data);
+			io.to(socket.roomId).emit('client_update', data);
+			io.to(socket.roomId).emit('client_update', {
+				theFunc: 'syncThePlayers',
+				thePlayers: listofgames.get(socket.roomId).players
+			});
+		});
+
+		socket.on('update_gameengine', function() {
+			// Update the server game engine when the game master updates.
+			if  (listofgames.get(socket.roomId) && socket.roomMaster) {
+				listofgames.get(socket.roomId).update();
 			}
 		});
 
-		// Somebody left the game
+
 		socket.on('disconnect', function() {
+			console.log(socket.roomId);
 
-			// Notify the other person in the game room
-			// that his partner has left
+			var roomId = this.roomId;
+			console.log(this.playerId + ' has left room ' + roomId + '.');
 
-			var roomId = this.room;
-			console.log(this.playerId + ' has left room ' + this.room + '.');
+			if (socket.roomMaster) {
+				// Need to notify everyone that the room master disconnected. 
+				socket.broadcast.to(roomId).emit('roommasterleft');
+			}
 
 			var data = {
 				theFunc: 'removePlayer',
-				room: this.room,
+				roomId: roomId,
 				playerId: socket.playerId
 			};
-			gameworlds.get(roomId).callFunc(data);
-			socket.broadcast.to(this.room).emit('receive_gameworld_update', data);
+			listofgames.get(roomId).callFunc(data);
+			socket.broadcast.to(roomId).emit('client_update', data);
 
 			// leave the room
-			socket.leave(socket.room);
-
+			socket.leave(roomId);
 
 			var playersLeft = findClientsSocket(io, roomId);
 			console.log("Players left in room " + roomId + ": " + playersLeft.length + ".\n");
 			if (playersLeft == 0) {
 				console.log('Removing room: ' + roomId);
-				clearInterval(gameSyncTimer.get(roomId));
-				gameSyncTimer.delete(roomId);
-				gameworlds.delete(roomId);
+				listofgames.delete(roomId);
+
+				clearInterval(gameLoopTimer.get(roomId));
+				gameLoopTimer.delete(roomId)
 			}
-		});
-
-		/** Update the game with player interactions **/
-		socket.on('update_gameworld', function(data) {
-			console.log('Updating server.');
-			if (gameworlds.get(socket.room)) {
-				gameworlds.get(socket.room).callFunc(data);
-			} else {
-				console.log('Server game world does not exist. Room = ' + socket.room);
-			}
-			console.log('Updating everyone else.\n');
-			socket.broadcast.to(socket.room).emit('receive_gameworld_update', data);
-		});
-
-		// socket.on('error', function (err) {
-		//   if (err.description) throw err.description;
-		//   else throw err; // Or whatever you want to do
-		// });
-
-		socket.on('error', function (err) {
-			if (err.description) {
-				console.log('routes.on[error.desc]: ' + err.description);
-				throw err.description;
-			} else {
-				console.log('routes.on[error]: ' + err)
-				throw err; // Or whatever you want to do
-			} 
 		});
 	});
 };

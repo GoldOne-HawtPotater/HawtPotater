@@ -1,0 +1,18 @@
+<i>
+  <i image="move_0.png" delay="180" x="-47" y="-61"/>
+  <i image="move_1.png" delay="180" x="-47" y="-61"/>
+  <i image="move_2.png" delay="180" x="-47" y="-61"/>
+  <i image="stand_0.png" delay="180" x="-48" y="-60"/>
+  <i image="stand_1.png" delay="180" x="-48" y="-60"/>
+  <i image="stand_2.png" delay="180" x="-48" y="-60"/>
+  <i image="stand_3.png" delay="180" x="-48" y="-60"/>
+  <i image="hit1_0.png" delay="600" x="-37" y="-64"/>
+  <i image="die1_0.png" delay="120" x="-48" y="-55"/>
+  <i image="die1_1.png" delay="120" x="-48" y="-55"/>
+  <i image="die1_2.png" delay="120" x="-48" y="-55"/>
+  <i image="die1_3.png" delay="120" x="-48" y="-55"/>
+  <i image="die1_4.png" delay="120" x="-48" y="-55"/>
+  <i image="die1_5.png" delay="120" x="-48" y="-55"/>
+  <i image="die1_6.png" delay="120" x="-48" y="-55"/>
+  <i image="die1_7.png" delay="300" x="-48" y="-55"/>
+</i>

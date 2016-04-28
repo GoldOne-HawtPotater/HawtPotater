@@ -2,11 +2,7 @@ $(function(){
     // connect to the socket
     var socket = io();
     
-    // Create the gameworld.
     var gameworld = new GameWorld();
-
-    // Create a game engine for the client
-    // var gameEngine = new GameEngine();
 
     // Get the game field (I think this is the canvas?)
     var field = document.getElementById("field");
@@ -20,20 +16,24 @@ $(function(){
     // The user player id
     var myPlayerId;
 
+    // A flag to see if you are the room master
+    var roomMaster = false;
+
+    var that = this;
+
     function startInput() {
         console.log('Starting input');
-
-        var getXandY = function (e) {
-            var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
-            var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
-
-            if (x < 1024) {
-                x = Math.floor(x / 32);
-                y = Math.floor(y / 32);
+        // Disable scroll keys
+        var keys = {37: 1, 38: 1, 39: 1, 40: 1};
+        document.onkeydown  = function(e) {
+            if (keys[e.keyCode]) {
+                e = e || window.event;
+                if (e.preventDefault) e.preventDefault();
+                e.returnValue = false;  
+                return false;
             }
-
-            return { x: x, y: y };
         }
+
 
         /** Set up the key listeners **/
         var gamescreen = $('#gameWorldCanvas')
@@ -43,16 +43,23 @@ $(function(){
            var key = e.which;
            var data;
            switch(key) {
-                case 32:
+                case 49: // {1} key
+                    data = {
+                        theFunc: 'toggleReady',
+                        playerId: myPlayerId
+                    };
+                    socket.emit('server_update', data)
+                    break;
+                case 32: // spacebar (jump)
                     data = {
                         theFunc: 'jumpPlayer',
                         playerId: myPlayerId,
                         value: true
                     };
-                    if (gameworld.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
-                        socket.emit('update_gameworld', data)
-                        gameworld.jumpPlayer(data);
-                    }
+                    // if (gameworld.gameEngine.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
+                        socket.emit('server_update', data)
+                        // gameworld.gameEngine.jumpPlayer(data);
+                    // }
                     break;
                 case 37: //left
                 case 39: //right
@@ -62,23 +69,20 @@ $(function(){
                         direction: key,
                         value: true
                     };
-                    if (!gameworld.players.get(myPlayerId).isMoving) {
-                        socket.emit('update_gameworld', data)
-                        gameworld.movePlayer(data);
+                    if (!gameworld.gameEngine.players.get(myPlayerId).isMoving) {
+                        socket.emit('server_update', data)
+                        // gameworld.gameEngine.movePlayer(data);
                     }
                     break;
-                case 49: // {1 key}
-                    data = {
-                        theFunc: 'toggleReady',
-                        playerId: myPlayerId
-                    };
-                    socket.emit('update_gameworld', data)
-                    gameworld.toggleReady(data);
+                case 38: //up
+                    break;
+                case 40: //down
                     break;
            }
         });
 
         gamescreen.keyup(function(e) {
+            e.preventDefault();
            var key = e.which; 
            switch(key) {
                 case 37: //left
@@ -89,8 +93,8 @@ $(function(){
                         direction: key,
                         value: false
                     };
-                    socket.emit('update_gameworld', data);
-                    gameworld.movePlayer(data);
+                    socket.emit('server_update', data);
+                    // gameworld.gameEngine.movePlayer(data);
                     break;
                 case 38: //up
                     break;
@@ -103,10 +107,7 @@ $(function(){
         console.log('Input started');
     }
 
-    /** Set up the sockets the client needs to listen to **/
-    socket.on('sync_players', function (serverPlayerData) {
-        gameworld.syncThePlayers(serverPlayerData);
-    });
+  
 
     // on connection to server get the roomId of person's room
     socket.on('connect', function(){
@@ -114,76 +115,48 @@ $(function(){
             ASSET_MANAGER.queueDownload("../img/stolen_corgi_walk.png");
             ASSET_MANAGER.queueDownload("../img/potato.png");
             //... Add more asssets below.
+            var numberOfFrames = 15;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/dog/stand_' + i + '.png');
+            }
+            numberOfFrames = 6;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/dog/move_' + i + '.png');
+            }
         };
 
         /** Download the assets **/
         queueDownloads();
         ASSET_MANAGER.downloadAll(function () {
+            startInput();
+            myPlayerId = Date.now();
+            gameworld.init(ctx, socket);
+            gameworld.start();
             // This is called when the page loads.
-            socket.emit('load', roomId);
+            var data = {
+                theFunc: 'addPlayer',
+                roomId: roomId,
+                playerId: myPlayerId
+            };
+            socket.emit('joingameroom', data);
+            // Add the player to our own gameworld
+            gameworld.gameEngine.addPlayer(data);
+            console.log('This browser id is ' + data.playerId);
         });
     });
 
-    // receive the names of all people in the game room
-    socket.on('joingame', function(data){
-        if (gameworld.players.size < 4) {
-            /** Register our key inputs. **/
-            console.log('This browser id is ' + data.playerId);
-            startInput();
-            myPlayerId = data.playerId;
-            gameworld.init(ctx);
-            gameworld.syncThePlayers(data.thePlayers);
-            gameworld.start();
-
-            // var bg = new EntityCollection.Background();
-            // gameworld.addEntity(bg);
-
-            var sendData = {
-                theFunc: 'addPlayer',
-                playerId: myPlayerId,
-                roomId: roomId
-            };
-
-            // Add user to the game world.
-            gameworld.callFunc(sendData);
-            // Add the user to the game world on the server.
-            socket.emit('login', sendData);
-        } else {
-            // There's too many players. 
-            // Show a message saying there is too many players
-            // Possibly allow them to spectate the game.
-        }
-    });
-
-    // socket.on('leave',function(data){
-    //     if(data.boolean && roomId==data.room){
-    //         gameworld.removePlayer({
-    //             playerId: data.playerId
-    //         })
-    //     }
-    // });
-
-    socket.on('tooMany', function(data){
-        // then spectate? We can let the client watch the game server.
-        if(data.boolean && name.length === 0) {
-
-        }
-    });
-
-    // socket.on('receive_player_update', function(data){
-    //     if(data && data.theFunc) {
-    //         gameEngine[data.theFunc](data);
-    //     } else {
-    //         console.log('receive_player_update failed. Data is null.');
-    //         console.log(data);
-    //     }
-    // });
-
-    socket.on('receive_gameworld_update', function(data){
+    socket.on('client_update', function(data){
         if(data && data.theFunc) {
-            gameworld.callFunc(data);
+            gameworld.gameEngine.callFunc(data);
         } else {
             console.log('receive_gameworld_update failed. Data is ' + data + '\n');
         }
     });
+
+    socket.on('setroommaster', function(data) {
+        if (data.playerId == myPlayerId) {
+            gameworld.roomMasterWorld = true;
+        }
+    });
 });
+
