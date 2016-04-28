@@ -45,10 +45,15 @@ module.exports = function(app,io){
 			var gameRoom = findClientsSocket(io, data.roomId);
 			if (gameRoom.length == 0) {
 				listofgames.set(data.roomId, new GameEngine());
-				gameLoopTimer.set(data.roomId, setInterval(function () {
-					// Update the game engine
-					listofgames.get(data.roomId).update();
-				}, 1000/60));
+				socket.roomMaster = true;
+				socket.emit('setroommaster', {
+					playerId: data.playerId
+				});
+				// var engine = listofgames.get(data.roomId);
+				// gameLoopTimer.set(data.roomId, setInterval(function () {
+				// 	// Update the game engine
+				// 	engine.update();
+				// }, 1000/60));
 			}
 
 
@@ -85,10 +90,24 @@ module.exports = function(app,io){
 			});
 		});
 
+		socket.on('update_gameengine', function() {
+			// Update the server game engine when the game master updates.
+			if  (listofgames.get(socket.roomId) && socket.roomMaster) {
+				listofgames.get(socket.roomId).update();
+			}
+		});
+
+
 		socket.on('disconnect', function() {
 			console.log(socket.roomId);
+
 			var roomId = this.roomId;
 			console.log(this.playerId + ' has left room ' + roomId + '.');
+
+			if (socket.roomMaster) {
+				// Need to notify everyone that the room master disconnected. 
+				socket.broadcast.to(roomId).emit('roommasterleft');
+			}
 
 			var data = {
 				theFunc: 'removePlayer',

@@ -16,6 +16,11 @@ $(function(){
     // The user player id
     var myPlayerId;
 
+    // A flag to see if you are the room master
+    var roomMaster = false;
+
+    var that = this;
+
     function startInput() {
         console.log('Starting input');
         // Disable scroll keys
@@ -45,16 +50,23 @@ $(function(){
                     };
                     socket.emit('server_update', data)
                     break;
+                case 50: // {2} key, testing code to spawn powerUp
+                    data = {
+                        theFunc: 'addPowerUps',
+                        playerId: myPlayerId
+                    };
+                    socket.emit('server_update', data)
+                    break;
                 case 32: // spacebar (jump)
                     data = {
                         theFunc: 'jumpPlayer',
                         playerId: myPlayerId,
                         value: true
                     };
-                    if (gameworld.gameEngine.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
+                    // if (gameworld.gameEngine.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
                         socket.emit('server_update', data)
                         // gameworld.gameEngine.jumpPlayer(data);
-                    }
+                    // }
                     break;
                 case 37: //left
                 case 39: //right
@@ -109,16 +121,25 @@ $(function(){
         var queueDownloads = function() {
             ASSET_MANAGER.queueDownload("../img/stolen_corgi_walk.png");
             ASSET_MANAGER.queueDownload("../img/potato.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             //... Add more asssets below.
+            var numberOfFrames = 15;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/dog/stand_' + i + '.png');
+            }
+            numberOfFrames = 6;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/dog/move_' + i + '.png');
+            }
         };
 
         /** Download the assets **/
         queueDownloads();
         ASSET_MANAGER.downloadAll(function () {
             startInput();
-            gameworld.init(ctx);
-            gameworld.start();
             myPlayerId = Date.now();
+            gameworld.init(ctx, socket);
+            gameworld.start();
             // This is called when the page loads.
             var data = {
                 theFunc: 'addPlayer',
@@ -128,8 +149,6 @@ $(function(){
             socket.emit('joingameroom', data);
             // Add the player to our own gameworld
             gameworld.gameEngine.addPlayer(data);
-            // gameworld.syncThePlayers(data.thePlayers);
-            // gameworld.start();
             console.log('This browser id is ' + data.playerId);
         });
     });
@@ -139,6 +158,12 @@ $(function(){
             gameworld.gameEngine.callFunc(data);
         } else {
             console.log('receive_gameworld_update failed. Data is ' + data + '\n');
+        }
+    });
+
+    socket.on('setroommaster', function(data) {
+        if (data.playerId == myPlayerId) {
+            gameworld.roomMasterWorld = true;
         }
     });
 });

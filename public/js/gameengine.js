@@ -11,7 +11,9 @@
     var Entity = EntityCollection.Entity,
         HawtPlayer = EntityCollection.HawtPlayer,
         Background = EntityCollection.Background,
-        Potato = EntityCollection.Potato;
+        Potato = EntityCollection.Potato,
+        HawtDogge = EntityCollection.HawtDogge,
+        MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp;
 
 
       /////////////////////////////////////////////////
@@ -25,6 +27,8 @@
         this.surfaceWidth = 1280;
         this.surfaceHeight = 720;
         this.SCALE = 30;
+        this.clockTick = 0;
+        this.timer = new Timer();
 
         // Create a new box2d world
         this.b2dWorld = new Box2D.Dynamics.b2World(
@@ -36,6 +40,7 @@
     };
 
     GameEngine.prototype.update = function () {
+        this.clockTick = this.timer.tick();
         /** Update the b2dWorld **/
         this.b2dWorld.Step(
             1 / 60      //frame-rate
@@ -58,15 +63,17 @@
             var vel = body.GetLinearVelocity();
             var desiredVel = 0;
             if (player.isMoving) {
-                if (player.direction < 0) desiredVel = -5;
-                if (player.direction > 0) desiredVel = 5;
+                if (player.direction < 0) desiredVel = -10;
+                if (player.direction > 0) desiredVel = 10;
             }
             var velChange = desiredVel - vel.x;
-            var impulse = body.GetMass() * velChange;
+            var impulse = body.GetMass() * velChange
             body.ApplyImpulse(
                 new Box2D.Common.Math.b2Vec2(impulse, 0), 
                 body.GetWorldCenter()
             );
+            // var pos = body.GetPosition();
+            // body.SetPosition(new Box2D.Common.Math.b2Vec2(pos.x + desiredVel, pos.y));
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
 
@@ -82,9 +89,9 @@
             //                 + 'player.y = ' + player.y + '\n' 
             //                 + '====================================='
             //                 );
-            if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 / 60 / 24 / 365 + ' - The x,y is (' + player.x + ',' + player.y + ')');
-
+            // if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 + ' - The x,y is (' + player.x + ',' + player.y + ')');
         });
+        // console.log('Clock tick = ' + that.clockTick);
     };
 
 
@@ -95,7 +102,7 @@
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
         fixDef.density = 1.0;
         fixDef.friction = 0.5;
-        fixDef.restitution = 0.2;
+        fixDef.restitution = 0;
         // Create the ground
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
         bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
@@ -113,16 +120,21 @@
         bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
         bodyDef.fixedRotation = true
 
+        // var width, height;
+        // if (dog) {
+        //      width = 83; height = 52;
+        // }
+
         // fixture definition and shape definition for fixture
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
         fixDef.density = 1;
         fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
         fixDef.shape.SetAsBox(
-            185 / 2 / this.SCALE,
-            164 / 2 / this.SCALE
+            83 / 2 / this.SCALE,
+            52 / 2 / this.SCALE
             );
-        fixDef.friction = 1;
-        fixDef.restitution = 0.2;
+        fixDef.friction = 0;
+        fixDef.restitution = 0;
         
 
         // create dynamic body
@@ -151,7 +163,7 @@
         // Keep track of the player box2d body object
         this.playersB2d.set(data.playerId, body);
         // keep track of the player entity
-        this.players.set(data.playerId, new HawtPlayer(data));
+        this.players.set(data.playerId, new HawtDogge(data));
     };
 
     GameEngine.prototype.removePlayer = function (data) {
@@ -163,6 +175,42 @@
         this.playersB2d.delete(data.playerId);
         // console.log('Player ' + data.playerId + ' has been removed.\n');
     };
+
+    GameEngine.prototype.addPowerUps = function (data) {
+        // Specify a player body definition
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        bodyDef.fixedRotation = true;
+
+        // fixture definition and shape definition for fixture
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 0.5;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox(
+            64 / 2 / this.SCALE,
+            64 / 2 / this.SCALE
+            );
+        fixDef.friction = 1;
+        fixDef.restitution = 0.9875;
+
+        bodyDef.position.x = 450 / this.SCALE;
+        bodyDef.position.y = 50 / this.SCALE;
+
+        var body = this.b2dWorld.CreateBody(bodyDef);
+        body.SetSleepingAllowed(false);
+
+        body.CreateFixture(fixDef);
+
+        //data.x = body.GetPosition().x * this.SCALE;
+        //data.y = body.GetPosition().y * this.SCALE;
+
+        var powerUp = new MultiJumpPowerUp({
+            x: 450,
+            y: 50
+        });
+        this.entities.set(powerUp.id, powerUp);
+        this.entitiesB2d.set(powerUp.id, body);
+    }
 
     GameEngine.prototype.addPotato = function (data) {
          // Specify a player body definition
@@ -178,7 +226,7 @@
             27 / 2 / this.SCALE
             );
         fixDef.friction = 1;
-        fixDef.restitution = 0.7;
+        fixDef.restitution = 0.9575;
 
         bodyDef.position.x = 200 / this.SCALE;
         bodyDef.position.y = 50 / this.SCALE;
@@ -191,7 +239,7 @@
         //data.x = body.GetPosition().x * this.SCALE;
         //data.y = body.GetPosition().y * this.SCALE;
 
-        var potato = new EntityCollection.Potato({
+        var potato = new Potato({
             x: 200,
             y: 50
         });
@@ -210,10 +258,16 @@
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
-            // Need to set the airborn flag to true/false to use the correct animation
-            var velocity = playerBody.GetLinearVelocity();
-            velocity.y = 30;
-            playerBody.SetLinearVelocity(velocity);
+            //** Jump using impulse and velocity
+            var impulse = playerBody.GetMass() * 10* -1;
+            playerBody.ApplyImpulse(
+                new Box2D.Common.Math.b2Vec2(0, impulse),
+                playerBody.GetWorldCenter());
+
+            //** Jump using velocity
+            // var velocity = playerBody.GetLinearVelocity();
+            // velocity.y = -10;
+            // playerBody.SetLinearVelocity(velocity);
         }
     };
 
@@ -232,7 +286,7 @@
                     player.direction = 1;
                     break;
             }
-            var playerBody = this.playersB2d.get(data.playerId);
+            // var playerBody = this.playersB2d.get(data.playerId);
         }
     };
 
@@ -283,6 +337,24 @@
             console.log('GameEngine: ' + data + '\n');
         }
     };
+
+    function Timer() {
+        this.gameTime = 0;
+        this.maxStep = 0.05;
+        this.wallLastTimestamp = 0;
+        this.counter = 0;
+    }
+
+    Timer.prototype.tick = function () {
+        this.counter++;
+        var wallCurrent = Date.now();
+        var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
+        this.wallLastTimestamp = wallCurrent;
+
+        var gameDelta = Math.min(wallDelta, this.maxStep);
+        this.gameTime += gameDelta;
+        return gameDelta;
+    }
 
     exports.GameEngine = GameEngine;
 })(typeof global === "undefined" ? window : exports, typeof global === "undefined");

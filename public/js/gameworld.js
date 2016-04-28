@@ -16,24 +16,6 @@ $(function(){
         })();
     
 
-    function Timer() {
-        this.gameTime = 0;
-        this.maxStep = 0.05;
-        this.wallLastTimestamp = 0;
-        this.counter = 0;
-    }
-
-    Timer.prototype.tick = function () {
-        this.counter++;
-        var wallCurrent = Date.now();
-        var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
-        this.wallLastTimestamp = wallCurrent;
-
-        var gameDelta = Math.min(wallDelta, this.maxStep);
-        this.gameTime += gameDelta;
-        return gameDelta;
-    }
-
     /** Gameworld Class **/
 
     var GameWorld = function () {
@@ -41,14 +23,16 @@ $(function(){
         this.surfaceWidth = 1280;
         this.surfaceHeight = 720;
         this.gameStarted = false;
+        this.roomMasterWorld = false;
         this.ctx = null;
 
         this.debug = true;
     }
     window.GameWorld = GameWorld;
 
-    GameWorld.prototype.init = function (ctx) {
+    GameWorld.prototype.init = function (ctx, socket) {
         this.ctx = ctx;
+        this.socket = socket;
 
         if (this.debug) {
             //setup debug draw
@@ -60,8 +44,6 @@ $(function(){
             debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
             this.gameEngine.b2dWorld.SetDebugDraw(debugDraw);
         }
-
-        this.timer = new Timer();
     }
 
     GameWorld.prototype.startTheGame = function (data) {
@@ -90,11 +72,11 @@ $(function(){
 
         /** Draw random entities **/
         this.gameEngine.entities.forEach(function(entity) {
-            entity.draw(that.ctx, that.clockTick);
+            entity.draw(that.ctx, that.gameEngine.clockTick);
         });
         /** Draw Players **/
         this.gameEngine.players.forEach(function(player) {
-            player.draw(that.ctx, that.clockTick);
+            player.draw(that.ctx, that.gameEngine.clockTick);
         });
         if (drawCallback) {
             drawCallback(this);
@@ -104,7 +86,7 @@ $(function(){
     }
 
     GameWorld.prototype.loop = function () {
-        this.clockTick = this.timer.tick();
+        if (this.roomMasterWorld) this.socket.emit('update_gameengine');
         this.gameEngine.update();
         this.draw();
     }
