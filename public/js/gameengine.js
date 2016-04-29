@@ -37,6 +37,9 @@
         ); 
         // Create the platforms
         this.createPlatforms();
+
+        // Create the Listener for collisions
+        this.createListener(this.b2dWorld);
     };
 
     GameEngine.prototype.update = function () {
@@ -113,6 +116,14 @@
         fixDef.shape.SetAsBox((this.surfaceWidth / this.SCALE) / 2, 0.5 / 2);
         this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
     };
+
+    GameEngine.prototype.createListener = function(world) {
+        var listener = new Box2D.Dynamics.b2ContactListener;
+        listener.BeginContact = function(contact) {
+            console.log(contact.GetFixtureA().GetBody().GetUserData());
+        }
+        world.SetContactListener(listener);
+    }
 
     GameEngine.prototype.addPlayer = function (data) {
         // Specify a player body definition
@@ -191,7 +202,7 @@
             64 / 2 / this.SCALE
             );
         fixDef.friction = 1;
-        fixDef.restitution = 0.9875;
+        fixDef.restitution = 0;
 
         bodyDef.position.x = 450 / this.SCALE;
         bodyDef.position.y = 50 / this.SCALE;
