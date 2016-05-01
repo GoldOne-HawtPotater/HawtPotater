@@ -117,11 +117,65 @@
         this.b2dWorld.CreateBody(bodyDef).CreateFixture(fixDef);
     };
 
-    GameEngine.prototype.createListener = function(world) {
+    GameEngine.prototype.createListener = function (world) {
+        // We lose scope inside of the listener so we need a reference to the game engine
+        // to access its methods 
+        var that = this;
+
         var listener = new Box2D.Dynamics.b2ContactListener;
         listener.BeginContact = function(contact) {
             console.log(contact.GetFixtureA().GetBody().GetUserData());
+            console.log(contact.GetFixtureB().GetBody().GetUserData());
+
+            var firstObjectCollided = contact.GetFixtureA().GetBody().GetUserData();
+            var secondObjectCollided = contact.GetFixtureB().GetBody().GetUserData();
+
+            // Temporary messy code to test collisions with Players and Power Ups
+            //
+            // Should ideally be structured to work with multiple types 
+            // of objects (Players, PowerUps, Floor, Platforms, etc)
+            // 
+            // Have each Entity have a "hit" method that determines what it does when collided?
+
+
+            // Player and Power Ups
+            if (firstObjectCollided != null && firstObjectCollided.type == "PLAYER") {
+                console.log("First object detected as Player");
+                if (secondObjectCollided != null && secondObjectCollided.type == "POWER_UP") {
+                    console.log("Second object detected as Power Up");
+                    that.removeEntity({ entityId: secondObjectCollided.id });
+                }
+            }
+
+            if (secondObjectCollided != null && secondObjectCollided.type == "PLAYER") {
+                console.log("Second object detected as Player");
+                if (firstObjectCollided != null && firstObjectCollided.type == "POWER_UP") {
+                    console.log("First object detected as Power Up");
+                    that.removeEntity({ entityId: firstObjectCollided.id });
+                }
+            }
+
+            // Player and Potato
+            if (firstObjectCollided != null && firstObjectCollided.type == "PLAYER") {
+                console.log("First object detected as Player");
+                if (secondObjectCollided != null && secondObjectCollided.type == "POTATO") {
+                    console.log("Second object detected as Potato");
+                    that.players.get(firstObjectCollided.id).score += 1;
+                    console.log(firstObjectCollided.id + "Score: " + that.players.get(firstObjectCollided.id).score);
+                }
+            }
+
+            if (secondObjectCollided != null && secondObjectCollided.type == "PLAYER") {
+                console.log("Second object detected as Player");
+                if (firstObjectCollided != null && firstObjectCollided.type == "POTATO") {
+                    console.log("First object detected as Potato");
+                    that.players.get(secondObjectCollided.id).score += 1;
+                    console.log(secondObjectCollided.id + "Score: " + that.players.get(secondObjectCollided.id).score);
+                }
+            }
         }
+        
+        // Add the listener to the game world
         world.SetContactListener(listener);
     }
 
@@ -161,7 +215,13 @@
         body.SetSleepingAllowed(false);
 
         // Add the fixture
-        body.CreateFixture(fixDef); 
+        body.CreateFixture(fixDef);
+
+        // Set the data to be stored by the object for collisions 
+        body.SetUserData({
+            type: "PLAYER",
+            id: data.playerId
+        });
 
         // Add foot sensor fixture
         // ... implement the foot fixture & body
@@ -186,6 +246,16 @@
         this.playersB2d.delete(data.playerId);
         // console.log('Player ' + data.playerId + ' has been removed.\n');
     };
+
+    GameEngine.prototype.removeEntity = function (data) {
+        // remove the entity from the entity map
+        this.entities.delete(data.entityId);
+
+        // destory body from the world
+        this.b2dWorld.DestroyBody(this.entitiesB2d.get(data.entityId));
+        console.log("Attempted to remove entity with ID: " + data.entityId);
+        this.entitiesB2d.delete(data.entityId);
+    }
 
     GameEngine.prototype.addPowerUps = function (data) {
         // Specify a player body definition
@@ -219,6 +289,14 @@
             x: 450,
             y: 50
         });
+
+        // Set the data to be stored by the object for collisions
+        body.SetUserData({
+            type: "POWER_UP",
+            id: powerUp.id
+        });
+
+        console.log("Power Up ID: " + powerUp.id);
         this.entities.set(powerUp.id, powerUp);
         this.entitiesB2d.set(powerUp.id, body);
     }
@@ -245,7 +323,7 @@
         var body = this.b2dWorld.CreateBody(bodyDef);
         body.SetSleepingAllowed(false);
 
-        body.CreateFixture(fixDef); 
+        body.CreateFixture(fixDef);
 
         //data.x = body.GetPosition().x * this.SCALE;
         //data.y = body.GetPosition().y * this.SCALE;
@@ -254,6 +332,12 @@
             x: 200,
             y: 50
         });
+
+        body.SetUserData({
+            type: "POTATO",
+            id: potato.id
+        });
+
         this.entities.set(potato.id, potato);
         this.entitiesB2d.set(potato.id, body);
     };

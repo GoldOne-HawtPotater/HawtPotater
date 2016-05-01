@@ -52,8 +52,7 @@ $(function(){
                     break;
                 case 50: // {2} key, testing code to spawn powerUp
                     data = {
-                        theFunc: 'addPowerUps',
-                        playerId: myPlayerId
+                        theFunc: 'addPowerUps'
                     };
                     socket.emit('server_update', data)
                     break;

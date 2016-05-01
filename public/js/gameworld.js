@@ -77,7 +77,13 @@ $(function(){
         /** Draw Players **/
         this.gameEngine.players.forEach(function(player) {
             player.draw(that.ctx, that.gameEngine.clockTick);
+
+            // Draw scoring information
+            that.ctx.font = "20px Georgia";
+            that.ctx.fillStyle = "#ff0000";
+            that.ctx.fillText("Score: " + player.score, 1100, 50);
         });
+
         if (drawCallback) {
             drawCallback(this);
         }

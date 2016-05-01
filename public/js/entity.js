@@ -88,6 +88,7 @@
         this.isMovingLeft = false;
         this.isMovingRight = false;
         this.direction = 1;
+        this.score = 0;
         // this.moveSpeed = 200;
         this.width = playerObj.width;
         this.height = playerObj.height;
