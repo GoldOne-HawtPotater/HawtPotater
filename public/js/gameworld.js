@@ -14,6 +14,8 @@ $(function(){
                         setTimeout(callback, 1000 / 60);
                     };
         })();
+
+    var socket = io();
     
 
     /** Gameworld Class **/
@@ -30,9 +32,14 @@ $(function(){
     }
     window.GameWorld = GameWorld;
 
-    GameWorld.prototype.init = function (ctx, socket) {
+    GameWorld.prototype.init = function (ctx) {
         this.ctx = ctx;
-        this.socket = socket;
+
+        // Add the maps to gameMaps array
+        // this.lobbyMap = new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']);
+        this.gameMaps = [];
+        this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']));
+        this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map02']));
 
         if (this.debug) {
             //setup debug draw
@@ -46,14 +53,7 @@ $(function(){
         }
     }
 
-    GameWorld.prototype.startTheGame = function (data) {
-        this.gameStarted = !this.gameStarted;
-        while(Date.now() < data.time);
-    }
-
-
     GameWorld.prototype.start = function () {
-        console.log("start the game world loop");
         var that = this;
         (function gameLoop() {
             that.loop();
@@ -66,9 +66,19 @@ $(function(){
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         this.ctx.save();
 
-        // b2d debug
-        this.gameEngine.b2dWorld.DrawDebugData();
-        this.gameEngine.b2dWorld.ClearForces();
+        if (this.debug) {
+            // b2d debug
+            this.gameEngine.b2dWorld.DrawDebugData();
+            this.gameEngine.b2dWorld.ClearForces();    
+        }
+
+        if (this.gameEngine.myGameState != this.gameEngine.gameStates.waiting) {
+            /** Draw map **/
+            this.gameMaps[this.mapNum-1].drawMap(that.ctx);
+        } else {
+            /** Draw lobby **/
+            this.gameMaps[0].drawMap(that.ctx);
+        }
 
         /** Draw random entities **/
         this.gameEngine.entities.forEach(function(entity) {
@@ -77,7 +87,8 @@ $(function(){
         /** Draw Players **/
         this.gameEngine.players.forEach(function(player) {
             player.draw(that.ctx, that.gameEngine.clockTick);
-        });
+        });       
+
         if (drawCallback) {
             drawCallback(this);
         }
@@ -86,7 +97,7 @@ $(function(){
     }
 
     GameWorld.prototype.loop = function () {
-        if (this.roomMasterWorld) this.socket.emit('update_gameengine');
+        if (this.roomMasterWorld) socket.emit('update_gameengine');
         this.gameEngine.update();
         this.draw();
     }

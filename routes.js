@@ -31,7 +31,7 @@ module.exports = function(app,io){
 	var Map = require('collections/map');
 
 	/** Game Server **/
-	// var Entity = require('./public/js/entity').Entity;
+	var TileMaps = require('./public/js/mapdata').TileMaps;
 	var GameEngine = require('./public/js/gameengine').GameEngine;
     var listofgames = new Map();
 	// Keep a reference so we can stop the sync.
@@ -49,11 +49,26 @@ module.exports = function(app,io){
 				socket.emit('setroommaster', {
 					playerId: data.playerId
 				});
-				// var engine = listofgames.get(data.roomId);
-				// gameLoopTimer.set(data.roomId, setInterval(function () {
-				// 	// Update the game engine
-				// 	engine.update();
-				// }, 1000/60));
+				var engine = listofgames.get(data.roomId);
+				gameLoopTimer.set(data.roomId, setInterval(function () {
+					if (engine.players.length > 1 && engine.allIsReady()) {
+						// Randomly choose a map.
+						// Get a random number between 1 and the TileMaps.length - 1
+						var mapNum = Math.ceil(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1) + 1); //Math.floor(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1)) + 1;
+						var data = {
+							mapNum: mapNum,
+							time: Date.now() + 5000
+						};
+						io.to(socket.roomId).emit('startTheGame', data);
+						engine.setGame(data);
+					} else if (engine.myGameState == engine.gameStates.playing) {
+						io.to(socket.roomId).emit('client_update', {
+							theFunc: 'syncTheGame',
+							thePlayers: listofgames.get(socket.roomId).players
+							//, theEntities: listofgames.get(socket.roomId).entities
+						});
+					}
+				}, 2000));
 			}
 
 
@@ -64,7 +79,7 @@ module.exports = function(app,io){
 
 			// Pass the current players.
 			socket.emit('client_update', {
-				theFunc: 'syncThePlayers',
+				theFunc: 'syncTheGame',
 				thePlayers: listofgames.get(data.roomId).players
 			});
 
@@ -81,13 +96,14 @@ module.exports = function(app,io){
 			} else {
 				console.log('Server game world does not exist. Room = ' + socket.room);
 			}
-			console.log('Updating everyone else.\n');
+			// console.log('Updating everyone else.\n');
 			// socket.broadcast.to(socket.roomId).emit('client_update', data);
 			io.to(socket.roomId).emit('client_update', data);
-			io.to(socket.roomId).emit('client_update', {
-				theFunc: 'syncThePlayers',
-				thePlayers: listofgames.get(socket.roomId).players
-			});
+			// io.to(socket.roomId).emit('client_update', {
+			// 	theFunc: 'syncTheGame',
+			// 	thePlayers: listofgames.get(socket.roomId).players,
+			// 	theEntities: listofgames.get(socket.roomId).entities
+			// });
 		});
 
 		socket.on('update_gameengine', function() {
