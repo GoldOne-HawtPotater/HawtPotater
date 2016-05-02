@@ -93,7 +93,6 @@
             var body = that.entitiesB2d.get(entity.id);
             entity.x = body.GetPosition().x * that.SCALE - entity.width / 2;
             entity.y = body.GetPosition().y * that.SCALE - entity.height / 2;
-            entity.velocity = body.GetLinearVelocity();
             entity.position = body.GetPosition();
         });
 
@@ -379,14 +378,13 @@
             data.theEntities.forEach(function(entity, index, array) {
                 var entity = entity[1];
                 if (GE.entities.get(entity.id)) {
+                    console.log("Updating potato");
                     GE.entities.get(entity.id).syncEntity(entity);
                     var position = new Box2D.Common.Math.b2Vec2(
                         entity.position.x,
                         entity.position.y
                         );
                     GE.entitiesB2d.get(entity.id).SetPosition(position);
-                    var velocity = new Box2D.Common.Math.b2Vec2(entity.velocity.x, entity.velocity.x);
-                    GE.entitiesB2d.get(entity.id).SetLinearVelocity(velocity);
                 }
             });
         }

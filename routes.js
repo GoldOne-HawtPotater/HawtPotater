@@ -110,6 +110,11 @@ module.exports = function(app,io){
 			// Update the server game engine when the game master updates.
 			if  (listofgames.get(socket.roomId) && socket.roomMaster) {
 				listofgames.get(socket.roomId).update();
+				io.to(socket.roomId).emit('client_update', {
+					theFunc: 'syncTheGame',
+					thePlayers: listofgames.get(socket.roomId).players,
+					theEntities: listofgames.get(socket.roomId).entities
+				});
 			}
 		});
 
