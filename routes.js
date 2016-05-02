@@ -97,24 +97,20 @@ module.exports = function(app,io){
 				console.log('Server game world does not exist. Room = ' + socket.room);
 			}
 			// console.log('Updating everyone else.\n');
-			socket.broadcast.to(socket.roomId).emit('client_update', data);
-			// io.to(socket.roomId).emit('client_update', data);
-			// io.to(socket.roomId).emit('client_update', {
-			// 	theFunc: 'syncTheGame',
-			// 	thePlayers: listofgames.get(socket.roomId).players,
-			// 	theEntities: listofgames.get(socket.roomId).entities
-			// });
+			// socket.broadcast.to(socket.roomId).emit('client_update', data);
+			io.to(socket.roomId).emit('client_update', data);
 		});
 
 		socket.on('update_gameengine', function() {
 			// Update the server game engine when the game master updates.
 			if  (listofgames.get(socket.roomId) && socket.roomMaster) {
 				listofgames.get(socket.roomId).update();
-				io.to(socket.roomId).emit('client_update', {
-					theFunc: 'syncTheGame',
-					thePlayers: listofgames.get(socket.roomId).players
-					// , theEntities: listofgames.get(socket.roomId).entities
-				});
+				// This fixes the potato sync issue but causes lag/gitter on the server. 
+				// io.to(socket.roomId).emit('client_update', {
+				// 	theFunc: 'syncTheGame',
+				// 	thePlayers: listofgames.get(socket.roomId).players
+				// 	, theEntities: listofgames.get(socket.roomId).entities
+				// });
 			}
 		});
 

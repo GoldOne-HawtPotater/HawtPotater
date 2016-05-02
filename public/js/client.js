@@ -58,7 +58,7 @@ $(function(){
                     };
                     // if (gameworld.gameEngine.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
                         socket.emit('server_update', data)
-                        gameworld.gameEngine.jumpPlayer(data);
+                        // gameworld.gameEngine.jumpPlayer(data);
                     // }
                     break;
                 case 37: //left
@@ -70,7 +70,7 @@ $(function(){
                     };
                     if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
                         socket.emit('server_update', data)
-                        gameworld.gameEngine.movePlayer(data);
+                        // gameworld.gameEngine.movePlayer(data);
                     }
                     break;
                 case 39: //right
@@ -82,7 +82,7 @@ $(function(){
                     };
                     if (!gameworld.gameEngine.players.get(myPlayerId).isMovingRight) {
                         socket.emit('server_update', data)
-                        gameworld.gameEngine.movePlayer(data);
+                        // gameworld.gameEngine.movePlayer(data);
                     }
                     break;
                 case 38: //up
@@ -105,7 +105,7 @@ $(function(){
                         value: false
                     };
                     socket.emit('server_update', data);
-                    gameworld.gameEngine.movePlayer(data);
+                    // gameworld.gameEngine.movePlayer(data);
                     break;
                 case 38: //up
                     break;
