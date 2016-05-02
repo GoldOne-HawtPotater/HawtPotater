@@ -378,7 +378,6 @@
             data.theEntities.forEach(function(entity, index, array) {
                 var entity = entity[1];
                 if (GE.entities.get(entity.id)) {
-                    console.log("Updating potato");
                     GE.entities.get(entity.id).syncEntity(entity);
                     var position = new Box2D.Common.Math.b2Vec2(
                         entity.position.x,
