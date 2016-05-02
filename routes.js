@@ -112,8 +112,8 @@ module.exports = function(app,io){
 				listofgames.get(socket.roomId).update();
 				io.to(socket.roomId).emit('client_update', {
 					theFunc: 'syncTheGame',
-					thePlayers: listofgames.get(socket.roomId).players,
-					theEntities: listofgames.get(socket.roomId).entities
+					thePlayers: listofgames.get(socket.roomId).players
+					// , theEntities: listofgames.get(socket.roomId).entities
 				});
 			}
 		});
