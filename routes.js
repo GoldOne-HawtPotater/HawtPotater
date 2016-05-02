@@ -97,8 +97,8 @@ module.exports = function(app,io){
 				console.log('Server game world does not exist. Room = ' + socket.room);
 			}
 			// console.log('Updating everyone else.\n');
-			// socket.broadcast.to(socket.roomId).emit('client_update', data);
-			io.to(socket.roomId).emit('client_update', data);
+			socket.broadcast.to(socket.roomId).emit('client_update', data);
+			// io.to(socket.roomId).emit('client_update', data);
 			// io.to(socket.roomId).emit('client_update', {
 			// 	theFunc: 'syncTheGame',
 			// 	thePlayers: listofgames.get(socket.roomId).players,
