@@ -53,6 +53,7 @@
         Entity.prototype.draw.call(this);
     }
 
+
     /** Multi-Jump Power Up Class **/
     var MultiJumpPowerUp = function (powerUpData) {
         if (isClient) {
@@ -81,10 +82,28 @@
         this.rotation = entity.rotation;
     }
 
+    /** Platforms **/
+    function Platform(platformObj) {
+        this.data = platformObj.data;
+        this.height = platformObj.height;
+        this.width = platformObj.width;
+        this.x = platformObj.x;
+        this.y = platformObj.y;
+    }
+
+    Platform.prototype = new Entity();
+    Platform.prototype.constructor = Background;
+
+    Platform.prototype.update = function () {
+    }
+
+    Platform.prototype.draw = function (ctx) {
+    }
+
     /** Hawt Potater Player Class **/
     var HawtPlayer = function(playerObj, width, height) {
+        // this.moveSpeed = 200;
         this.isJumping = false;
-        this.isMoving = false;
         this.isMovingLeft = false;
         this.isMovingRight = false;
         this.direction = 1;
@@ -111,6 +130,10 @@
     HawtPlayer.prototype.syncEntity = function(entity) {
         if (entity.playerId == this.playerId) {
             this.isReady = entity.isReady;
+            this.isJumping = entity.isJumping;
+            this.isMovingLeft = entity.isMovingLeft;
+            this.isMovingRight = entity.isMovingRight;
+            this.direction = entity.direction;
             Entity.prototype.syncEntity.call(this, entity);
         }
     }
@@ -134,12 +157,14 @@
 
     HawtDogge.prototype.draw = function (ctx, clockTick) {
         // Reset the animations if they're not running. 
-        // if (this.isMoving) this.standingAnimation.reset();
-        if (!this.isMoving) this.walkingAnimation.reset();
+        if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
 
         // Play the correct animation
         // Image is originally left we need to multiply by -1. (-1 = left, 1 = right). 
-        if (this.isMoving) {
+        // var direction = 1;
+        // if (this.isMovingLeft) direction = -1;
+        // if (this.isMovingRight) direction = 1;
+        if (this.isMovingLeft || this.isMovingRight) {
             this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
         } else {
             this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
@@ -154,7 +179,8 @@
         this.width = 30;
         this.height = 27;
         this.rotation = 0;
-        Entity.call(this, potatoData.x, potatoData.y, Date.now());
+        this.velocity = null;
+        Entity.call(this, potatoData.x, potatoData.y, potatoData.id);
     }
 
     Potato.prototype = new Entity();
@@ -170,8 +196,9 @@
     }
 
     Potato.prototype.syncEntity = function(entity) {
-        Entity.prototype.syncEntity.call(entity);
+        Entity.prototype.syncEntity.call(this, entity);
         this.rotation = entity.rotation;
+        this.velocity = entity.velocity;
     }
 
     // Add entities to the collection.

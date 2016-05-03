@@ -68,6 +68,17 @@ $(function(){
                     // }
                     break;
                 case 37: //left
+                    data = {
+                        theFunc: 'movePlayer',
+                        playerId: myPlayerId,
+                        direction: key,
+                        value: true
+                    };
+                    if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                        socket.emit('server_update', data)
+                        // gameworld.gameEngine.movePlayer(data);
+                    }
+                    break;
                 case 39: //right
                     data = {
                         theFunc: 'movePlayer',
@@ -75,7 +86,7 @@ $(function(){
                         direction: key,
                         value: true
                     };
-                    if (!gameworld.gameEngine.players.get(myPlayerId).isMoving) {
+                    if (!gameworld.gameEngine.players.get(myPlayerId).isMovingRight) {
                         socket.emit('server_update', data)
                         // gameworld.gameEngine.movePlayer(data);
                     }
@@ -118,9 +129,9 @@ $(function(){
     // on connection to server get the roomId of person's room
     socket.on('connect', function(){
         var queueDownloads = function() {
-            ASSET_MANAGER.queueDownload("../img/stolen_corgi_walk.png");
             ASSET_MANAGER.queueDownload("../img/potato.png");
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
+            ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
             //... Add more asssets below.
             var numberOfFrames = 15;
             for (var i = 0; i < numberOfFrames; i++) {
@@ -164,6 +175,11 @@ $(function(){
         if (data.playerId == myPlayerId) {
             gameworld.roomMasterWorld = true;
         }
+    });
+
+    socket.on('startTheGame', function (data) {
+        gameworld.mapNum = data.mapNum;
+        gameworld.gameEngine.setGame(data);
     });
 });
 
