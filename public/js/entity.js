@@ -53,6 +53,67 @@
         Entity.prototype.draw.call(this);
     }
 
+    /** Power Up Class **/
+    /** Not used yet **/
+    var PowerUp = function (powerUpData) {
+        this.rotation = 0;
+        Entity.call(this, powerUpData.x, powerUpData.y, Date.now());
+    }
+
+    PowerUp.prototype = new Entity();
+    PowerUp.prototype.constructor = MultiJumpPowerUp;
+
+    PowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    PowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    PowerUp.prototype.givePower = function(data) {
+
+    }
+
+    PowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
+
+
+    /** Multi-Jump Power Up Class **/
+    var MultiJumpPowerUp = function (powerUpData) {
+        if (isClient) {
+            this.sprite = new Animation(('../img/powerups/jump'), 1);
+        }
+        this.width = 64;
+        this.height = 64;
+        this.rotation = 0;
+        Entity.call(this, powerUpData.x, powerUpData.y, Date.now());
+    }
+
+    MultiJumpPowerUp.prototype = new Entity();
+    MultiJumpPowerUp.prototype.constructor = MultiJumpPowerUp;
+
+    MultiJumpPowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    MultiJumpPowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    MultiJumpPowerUp.prototype.givePower = function(data) {
+
+    }
+
+    MultiJumpPowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
+
     /** Platforms **/
     function Platform(platformObj) {
         this.data = platformObj.data;
@@ -78,6 +139,9 @@
         this.isMovingLeft = false;
         this.isMovingRight = false;
         this.direction = 1;
+        this.score = 0;
+        this.canDoubleJump = false;
+        // this.moveSpeed = 200;
         this.width = playerObj.width;
         this.height = playerObj.height;
         this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;
@@ -90,6 +154,10 @@
 
     HawtPlayer.prototype.update = function () {}
     HawtPlayer.prototype.draw = function (ctx, clockTick) {}
+
+    HawtPlayer.prototype.processCollision = function(data) {
+  
+    }
 
     HawtPlayer.prototype.toggleReady = function() {
         this.isReady = !this.isReady;
@@ -172,6 +240,7 @@
 
     // Add entities to the collection.
     EntityCollection.Entity = Entity;
+    EntityCollection.MultiJumpPowerUp = MultiJumpPowerUp;
     EntityCollection.HawtPlayer = HawtPlayer;
     EntityCollection.Background = Background;
     EntityCollection.Potato = Potato;

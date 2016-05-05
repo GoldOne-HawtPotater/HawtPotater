@@ -50,16 +50,24 @@ $(function(){
                     };
                     socket.emit('server_update', data)
                     break;
+                case 50: // {2} key, testing code to spawn powerUp
+                    data = {
+                        theFunc: 'addPowerUps'
+                    };
+                    socket.emit('server_update', data)
+                    break;
                 case 32: // spacebar (jump)
                     data = {
                         theFunc: 'jumpPlayer',
                         playerId: myPlayerId,
                         value: true
                     };
-                    // if (gameworld.gameEngine.playersB2d.get(myPlayerId).GetLinearVelocity().y == 0) {
+                    var player = gameworld.gameEngine.playersB2d.get(myPlayerId);
+                    var playerEnt = gameworld.gameEngine.players.get(myPlayerId);
+                    if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.canDoubleJump)) {
                         socket.emit('server_update', data)
                         // gameworld.gameEngine.jumpPlayer(data);
-                    // }
+                    }
                     break;
                 case 37: //left
                     data = {
@@ -124,6 +132,7 @@ $(function(){
     socket.on('connect', function(){
         var queueDownloads = function() {
             ASSET_MANAGER.queueDownload("../img/potato.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
             //... Add more asssets below.
             var numberOfFrames = 15;

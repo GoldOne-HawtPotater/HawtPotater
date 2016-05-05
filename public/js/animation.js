@@ -84,8 +84,11 @@ Animation.prototype.drawFrame = function (tick, ctx, x, y, flipH, flipV) {
     if (scaleH < 0) x += image.width;
     if (scaleV < 0) y += image.height;
 
+    //ctx.scale(scaleH, scaleV);
+    ctx.save();
     ctx.scale(scaleH, scaleV);
     ctx.drawImage(image, x * scaleH, y * scaleV);
+    ctx.restore();
 }
 
 Animation.prototype.drawImage = function (ctx, x, y, flipH, flipV) {
