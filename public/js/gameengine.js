@@ -14,7 +14,8 @@
         HawtPlayer = EntityCollection.HawtPlayer,
         Background = EntityCollection.Background,
         Potato = EntityCollection.Potato,
-        HawtDogge = EntityCollection.HawtDogge;
+        HawtDogge = EntityCollection.HawtDogge,
+        MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp;
 
 
       /////////////////////////////////////////////////
@@ -26,6 +27,7 @@
         this.entities = new Map();
         this.entitiesB2d = new Map();
         this.platformsB2d = [];
+        this.graveyard = [];
         this.surfaceWidth = 1280;
         this.surfaceHeight = 720;
         this.SCALE = 100;
@@ -48,6 +50,8 @@
 
         // Create the platforms
         this.createPlatforms({});
+        // Create the Listener for collisions
+        this.createListener(this.b2dWorld);
     };
 
     GameEngine.prototype.setGame = function (data) {
@@ -86,6 +90,11 @@
                 ,  10       //position iterations
             );
         }
+
+        for (var x = 0; x < this.graveyard.length; x++) {
+            this.removeEntity({entityId: this.graveyard[x].entityId});
+        }
+        this.graveyard = [];
 
         /** Random Entities Update **/
         var that = this;
@@ -181,6 +190,72 @@
         }
     };
 
+    GameEngine.prototype.createListener = function (world) {
+        // We lose scope inside of the listener so we need a reference to the game engine
+        // to access its methods 
+        var that = this;
+
+        var listener = new Box2D.Dynamics.b2ContactListener;
+        listener.BeginContact = function(contact) {
+            console.log(contact.GetFixtureA().GetBody().GetUserData());
+            console.log(contact.GetFixtureB().GetBody().GetUserData());
+
+            var firstObjectCollided = contact.GetFixtureA().GetBody().GetUserData();
+            var secondObjectCollided = contact.GetFixtureB().GetBody().GetUserData();
+
+            // Temporary messy code to test collisions with Players and Power Ups
+            //
+            // Should ideally be structured to work with multiple types 
+            // of objects (Players, PowerUps, Floor, Platforms, etc)
+            // 
+            // Have each Entity have a "hit" method that determines what it does when collided?
+
+
+            // Player and Power Ups
+            if (firstObjectCollided != null && firstObjectCollided.type == "PLAYER") {
+                console.log("First object detected as Player");
+                if (secondObjectCollided != null && secondObjectCollided.type == "POWER_UP") {
+                    console.log("Second object detected as Power Up");
+                    that.graveyard.push({ entityId: secondObjectCollided.id });
+                    that.players.get(firstObjectCollided.id).canDoubleJump = true;
+                    console.log("Can Double Jump: " + that.players.get(firstObjectCollided.id).canDoubleJump);
+                }
+            }
+
+            if (secondObjectCollided != null && secondObjectCollided.type == "PLAYER") {
+                console.log("Second object detected as Player");
+                if (firstObjectCollided != null && firstObjectCollided.type == "POWER_UP") {
+                    console.log("First object detected as Power Up");
+                    that.graveyard.push({ entityId: firstObjectCollided.id });
+                    that.players.get(secondObjectCollided.id).canDoubleJump = true;
+                    console.log("Can Double Jump: " + that.players.get(secondObjectCollided.id).canDoubleJump);
+                }
+            }
+
+            // Player and Potato
+            if (firstObjectCollided != null && firstObjectCollided.type == "PLAYER") {
+                console.log("First object detected as Player");
+                if (secondObjectCollided != null && secondObjectCollided.type == "POTATO") {
+                    console.log("Second object detected as Potato");
+                    that.players.get(firstObjectCollided.id).score += 1;
+                    console.log(firstObjectCollided.id + "Score: " + that.players.get(firstObjectCollided.id).score);
+                }
+            }
+
+            if (secondObjectCollided != null && secondObjectCollided.type == "PLAYER") {
+                console.log("Second object detected as Player");
+                if (firstObjectCollided != null && firstObjectCollided.type == "POTATO") {
+                    console.log("First object detected as Potato");
+                    that.players.get(secondObjectCollided.id).score += 1;
+                    console.log(secondObjectCollided.id + "Score: " + that.players.get(secondObjectCollided.id).score);
+                }
+            }
+        }
+        
+        // Add the listener to the game world
+        world.SetContactListener(listener);
+    }
+
     GameEngine.prototype.addPlayer = function (data) {
         // Specify a player body definition
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
@@ -217,7 +292,13 @@
         body.SetSleepingAllowed(false);
 
         // Add the fixture
-        body.CreateFixture(fixDef); 
+        body.CreateFixture(fixDef);
+
+        // Set the data to be stored by the object for collisions 
+        body.SetUserData({
+            type: "PLAYER",
+            id: data.playerId
+        });
 
         // Add foot sensor fixture
         // ... implement the foot fixture & body
@@ -243,6 +324,60 @@
         // console.log('Player ' + data.playerId + ' has been removed.\n');
     };
 
+    GameEngine.prototype.removeEntity = function (data) {
+        // remove the entity from the entity map
+        this.entities.delete(data.entityId);
+
+        // destory body from the world
+        this.b2dWorld.DestroyBody(this.entitiesB2d.get(data.entityId));
+        console.log("Attempted to remove entity with ID: " + data.entityId);
+        this.entitiesB2d.delete(data.entityId);
+    }
+
+    GameEngine.prototype.addPowerUps = function (data) {
+        // Specify a player body definition
+        var bodyDef = new Box2D.Dynamics.b2BodyDef;
+        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        bodyDef.fixedRotation = true;
+
+        // fixture definition and shape definition for fixture
+        var fixDef = new Box2D.Dynamics.b2FixtureDef;
+        fixDef.density = 0.5;
+        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        fixDef.shape.SetAsBox(
+            64 / 2 / this.SCALE,
+            64 / 2 / this.SCALE
+            );
+        fixDef.friction = 1;
+        fixDef.restitution = 0;
+
+        bodyDef.position.x = 450 / this.SCALE;
+        bodyDef.position.y = 50 / this.SCALE;
+
+        var body = this.b2dWorld.CreateBody(bodyDef);
+        body.SetSleepingAllowed(false);
+
+        body.CreateFixture(fixDef);
+
+        //data.x = body.GetPosition().x * this.SCALE;
+        //data.y = body.GetPosition().y * this.SCALE;
+
+        var powerUp = new MultiJumpPowerUp({
+            x: 450,
+            y: 50
+        });
+
+        // Set the data to be stored by the object for collisions
+        body.SetUserData({
+            type: "POWER_UP",
+            id: powerUp.id
+        });
+
+        console.log("Power Up ID: " + powerUp.id);
+        this.entities.set(powerUp.id, powerUp);
+        this.entitiesB2d.set(powerUp.id, body);
+    }
+
     GameEngine.prototype.addPotato = function (data) {
          // Specify a player body definition
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
@@ -258,7 +393,7 @@
         //     );
         
         fixDef.friction = 1;
-        fixDef.restitution = 0.7;
+        fixDef.restitution = 0.9575;
 
         bodyDef.position.x = 200 / this.SCALE;
         bodyDef.position.y = 50 / this.SCALE;
@@ -266,13 +401,19 @@
         var body = this.b2dWorld.CreateBody(bodyDef);
         body.SetSleepingAllowed(false);
 
-        body.CreateFixture(fixDef); 
+        body.CreateFixture(fixDef);
 
         var potato = new Potato({
             x: 200,
             y: 50,
             id: data.time
         });
+
+        body.SetUserData({
+            type: "POTATO",
+            id: potato.id
+        });
+
         this.entities.set(potato.id, potato);
         this.entitiesB2d.set(potato.id, body);
     };
@@ -288,6 +429,12 @@
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
+            // If we can double jump and our current y velocity is not 0 we are attempting a double jump
+            if (player.canDoubleJump == true && playerBody.GetLinearVelocity().y != 0) {
+                console.log("Detected double jump");
+                player.canDoubleJump = false;
+            }
+
             //** Jump using impulse and velocity
             var impulse = playerBody.GetMass() * 5 * -1;
             playerBody.ApplyImpulse(
