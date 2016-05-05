@@ -155,6 +155,10 @@
     HawtPlayer.prototype.update = function () {}
     HawtPlayer.prototype.draw = function (ctx, clockTick) {}
 
+    HawtPlayer.prototype.processCollision = function(data) {
+  
+    }
+
     HawtPlayer.prototype.toggleReady = function() {
         this.isReady = !this.isReady;
         console.log('Ready toggled.');
