@@ -151,37 +151,39 @@ $(function(){
             startInput();
             myPlayerId = Date.now();
             gameworld.init(ctx, socket);
-            gameworld.start();
             // This is called when the page loads.
             var data = {
                 theFunc: 'addPlayer',
                 roomId: roomId,
                 playerId: myPlayerId
             };
+
+            gameworld.gameEngine.addPlayer(data);
             socket.emit('joingameroom', data);
             // Add the player to our own gameworld
-            gameworld.gameEngine.addPlayer(data);
             console.log('This browser id is ' + data.playerId);
         });
     });
 
     socket.on('client_update', function(data){
-        if(data && data.theFunc) {
-            gameworld.gameEngine.callFunc(data);
+        if (roomMaster){
+            if(data && data.theFunc) {
+                gameworld.gameEngine.callFunc(data);
+            } else {
+                console.log('receive_gameworld_update failed. Data is ' + data + '\n');
+            }
         } else {
-            console.log('receive_gameworld_update failed. Data is ' + data + '\n');
+            console.log('You are not the game master. Nothing to update.');
         }
     });
 
     socket.on('setroommaster', function(data) {
         if (data.playerId == myPlayerId) {
             gameworld.roomMasterWorld = true;
-        }
-    });
+            roomMaster = true;
 
-    socket.on('startTheGame', function (data) {
-        gameworld.mapNum = data.mapNum;
-        gameworld.gameEngine.setGame(data);
+            gameworld.start();
+        }
     });
 });
 
