@@ -55,9 +55,25 @@ $(function(){
 
     GameWorld.prototype.start = function () {
         var that = this;
+        if (that.roomMasterWorld) {
+            var readyCheck = setInterval(function () {
+                if (that.gameEngine.players.size > 1 && that.gameEngine.allIsReady()) {
+                    // Randomly choose a map.
+                    // Get a random number between 1 and the TileMaps.length - 1
+                    that.mapNum = Math.ceil(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1) + 1); //Math.floor(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1)) + 1;
+                    var data = {
+                        mapNum: that.mapNum,
+                        time: Date.now() + 5000
+                    };
+                    that.gameEngine.setGame(data);
+                }
+            }, 2000);
+        }
         (function gameLoop() {
-            that.loop();
-            window.requestAnimFrame(gameLoop);
+            if (that.roomMasterWorld) {
+                that.loop();
+                window.requestAnimFrame(gameLoop);
+            }
         })();
     }
 
@@ -97,7 +113,6 @@ $(function(){
     }
 
     GameWorld.prototype.loop = function () {
-        if (this.roomMasterWorld) socket.emit('update_gameengine');
         this.gameEngine.update();
         this.draw();
     }
