@@ -84,14 +84,20 @@ $(function(){
         this.gameEngine.entities.forEach(function(entity) {
             entity.draw(that.ctx, that.gameEngine.clockTick);
         });
+
+        that.ctx.font = "20px Georgia";
+        that.ctx.fillStyle = "#ff0000";        
+        this.ctx.fillText("Scoreboard: ", 1100, 50);
+
         /** Draw Players **/
         this.gameEngine.players.forEach(function(player) {
             player.draw(that.ctx, that.gameEngine.clockTick);
 
             // Draw scoring information
-            that.ctx.font = "20px Georgia";
-            that.ctx.fillStyle = "#ff0000";
-            that.ctx.fillText("Score: " + player.score, 1100, 50);
+            that.ctx.fillText("Player " + player.playerNum + ": " + player.score, 1100, 50 * (player.playerNum + 1));
+
+            // Draw player name
+            that.ctx.fillText("Player " + player.playerNum, player.x, player.y - 50);
         });
 
         if (drawCallback) {

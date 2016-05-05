@@ -312,6 +312,7 @@
         this.playersB2d.set(data.playerId, body);
         // keep track of the player entity
         this.players.set(data.playerId, new HawtDogge(data));
+        this.players.get(data.playerId).playerNum = this.players.size;
     };
 
     GameEngine.prototype.removePlayer = function (data) {
