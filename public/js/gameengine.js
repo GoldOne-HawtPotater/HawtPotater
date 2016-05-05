@@ -217,6 +217,8 @@
                 if (secondObjectCollided != null && secondObjectCollided.type == "POWER_UP") {
                     console.log("Second object detected as Power Up");
                     that.graveyard.push({ entityId: secondObjectCollided.id });
+                    that.players.get(firstObjectCollided.id).canDoubleJump = true;
+                    console.log("Can Double Jump: " + that.players.get(firstObjectCollided.id).canDoubleJump);
                 }
             }
 
@@ -225,6 +227,8 @@
                 if (firstObjectCollided != null && firstObjectCollided.type == "POWER_UP") {
                     console.log("First object detected as Power Up");
                     that.graveyard.push({ entityId: firstObjectCollided.id });
+                    that.players.get(secondObjectCollided.id).canDoubleJump = true;
+                    console.log("Can Double Jump: " + that.players.get(secondObjectCollided.id).canDoubleJump);
                 }
             }
 
@@ -425,6 +429,12 @@
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
+            // If we can double jump and our current y velocity is not 0 we are attempting a double jump
+            if (player.canDoubleJump == true && playerBody.GetLinearVelocity().y != 0) {
+                console.log("Detected double jump");
+                player.canDoubleJump = false;
+            }
+
             //** Jump using impulse and velocity
             var impulse = playerBody.GetMass() * 5 * -1;
             playerBody.ApplyImpulse(

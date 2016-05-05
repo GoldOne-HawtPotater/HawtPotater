@@ -53,6 +53,34 @@
         Entity.prototype.draw.call(this);
     }
 
+    /** Power Up Class **/
+    /** Not used yet **/
+    var PowerUp = function (powerUpData) {
+        this.rotation = 0;
+        Entity.call(this, powerUpData.x, powerUpData.y, Date.now());
+    }
+
+    PowerUp.prototype = new Entity();
+    PowerUp.prototype.constructor = MultiJumpPowerUp;
+
+    PowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    PowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    PowerUp.prototype.givePower = function(data) {
+
+    }
+
+    PowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
+
 
     /** Multi-Jump Power Up Class **/
     var MultiJumpPowerUp = function (powerUpData) {
@@ -75,6 +103,10 @@
     MultiJumpPowerUp.prototype.draw = function (ctx, clockTick) {
         // ctx, x, y, flipH, flipV
         this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    MultiJumpPowerUp.prototype.givePower = function(data) {
+
     }
 
     MultiJumpPowerUp.prototype.syncEntity = function (entity) {
@@ -108,6 +140,7 @@
         this.isMovingRight = false;
         this.direction = 1;
         this.score = 0;
+        this.canDoubleJump = false;
         // this.moveSpeed = 200;
         this.width = playerObj.width;
         this.height = playerObj.height;
