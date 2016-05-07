@@ -109,15 +109,18 @@
         this.players.forEach(function(player) {
             var body = that.playersB2d.get(player.playerId);
             var vel = body.GetLinearVelocity();
-            var desiredVel = 0;
+
+            // movement
+            var desiredVel = vel.x * 0.90;
             if (player.isMovingLeft) {
-                desiredVel = -5;
+                if (Math.abs(desiredVel) < 5) desiredVel += -1;
                 player.direction = -1;
             } 
             if (player.isMovingRight) {
-                desiredVel = 5;
+                if (Math.abs(desiredVel) < 5) desiredVel += 1;
                 player.direction = 1;
             } 
+            
             var velChange = desiredVel - vel.x;
             var impulse = body.GetMass() * velChange
             body.ApplyImpulse(
@@ -125,6 +128,7 @@
                 body.GetWorldCenter()
             );
 
+            // Update player x y values based on box2d position
             player.x = body.GetPosition().x * that.SCALE - player.width / 2;
             player.y = body.GetPosition().y * that.SCALE - player.height / 2;
 
@@ -276,7 +280,7 @@
             52 / 2 / this.SCALE
             );
         fixDef.friction = 0;
-        fixDef.restitution = 0;
+        fixDef.restitution = 0.2;
         
 
         // create dynamic body
@@ -422,7 +426,15 @@
       /////////////////////////////////////////////////
      /**************** Modifier Code ****************/
     /////////////////////////////////////////////////
-    GameEngine.prototype.attack = function (data) {};
+    GameEngine.prototype.attack = function (data) {
+        if (data) {
+            var player = this.players.get(data.playerId);
+            var playerBody = this.playersB2d.get(data.playerId);
+            var vel = playerBody.GetLinearVelocity();
+            vel.x = 15 * player.direction;
+            playerBody.SetLinearVelocity(vel);
+        }
+    };
 
     GameEngine.prototype.jumpPlayer = function (data) {
         // console.log(data.playerId + ' is attempting a jump.');

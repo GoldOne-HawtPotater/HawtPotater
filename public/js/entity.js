@@ -141,6 +141,7 @@
         this.direction = 1;
         this.score = 0;
         this.canDoubleJump = false;
+        this.attackSteps = 0;
         // this.moveSpeed = 200;
         this.width = playerObj.width;
         this.height = playerObj.height;

@@ -89,13 +89,20 @@ $(function(){
                         value: true
                     };
                     if (!gameworld.gameEngine.players.get(myPlayerId).isMovingRight) {
-                        socket.emit('server_update', data)
+                        socket.emit('server_update', data);
                         // gameworld.gameEngine.movePlayer(data);
                     }
                     break;
                 case 38: //up
                     break;
                 case 40: //down
+                    break;
+                case 90: // z
+                    data = {
+                        theFunc: 'attack',
+                        playerId: myPlayerId
+                    };
+                    socket.emit('server_update', data);
                     break;
            }
         });
