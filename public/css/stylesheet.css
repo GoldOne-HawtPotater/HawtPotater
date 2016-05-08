@@ -23,6 +23,61 @@ body {
 	margin-right: auto;
 }
 
+#sectionCanvas {
+	display: none;
+}
+
+#sectionControls {
+	width: 1280px;
+	border: solid 3px black;
+	border-radius: 10px;
+	background-color: white;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 10px;
+	padding: 5px;
+	text-align: center;
+}
+
+.keyLabel {
+	text-align: center;
+}
+
+#mobileControls {
+	display: none;
+	text-align: center;
+}
+
+.mobileKeyContainer {
+	display: block;
+	text-align: left;
+}
+
+#mobileContainer {
+	display: inline-block;
+	background-color: white;
+	border: solid 3px black;
+	border-radius: 10px;
+	padding: 5px;
+}
+
+.gameKeys {
+	display: inline-block;
+	width: 128px;
+	height: 128px;
+}
+
+.gameKeysExtended {
+	width: 512px;
+}
+
+.halfKey {
+	display: inline-block;
+	width: 64px;
+	height: 64px;
+}
+
 
 
 
@@ -65,7 +120,6 @@ body {
 .banner {
 	height: 70px;
 	background-color: #3c4446;
-	margin-bottom: 200px;
 }
 
 .bannertext {

@@ -47,6 +47,9 @@ module.exports = function(app,io){
 				socket.emit('setroommaster', {
 					playerId: data.playerId
 				});
+			} else {
+				console.log("Setting player as controller.");
+				socket.emit('setcontroller');
 			}
 
 
