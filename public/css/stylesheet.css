@@ -78,6 +78,30 @@ body {
 	height: 64px;
 }
 
+.customKey {
+    display: inline-block;
+    background-color: #292929;
+    border-radius: 25px;
+    width: 100px;
+}
+
+.customKeyContainer {
+    width: 70%;
+    height: 70%;
+    border: 5px solid white;
+    margin: 8%;
+    border-radius: 20%;
+}
+
+.customKeyLabel {
+    text-align: left;
+    margin-left: 10%;
+    font-size: 3em;
+    color: white;
+    width: 64px;
+    height: 64px;
+}
+
 
 
 
