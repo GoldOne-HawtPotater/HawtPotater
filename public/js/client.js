@@ -32,8 +32,7 @@ $(function(){
     function startInput() {
         console.log('Starting input');
         /** Set up the key listeners **/
-        // var gamescreen = $('#gameWorldCanvas')
-        //                 .attr("tabindex", "0");
+        $('#gameWorldCanvas').attr("tabindex", "0").focus();
         var gamescreen = $(window);
 
         // Disable scroll keys
