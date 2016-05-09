@@ -44,11 +44,13 @@ $(function(){
            var data;
            switch(key) {
                 case 49: // {1} key
-                    data = {
-                        theFunc: 'toggleReady',
-                        playerId: myPlayerId
-                    };
-                    socket.emit('server_update', data)
+                    if (!gameworld.gameStarted) {
+                        data = {
+                            theFunc: 'toggleReady',
+                            playerId: myPlayerId
+                        };
+                        socket.emit('server_update', data)
+                    }
                     break;
                 case 50: // {2} key, testing code to spawn powerUp
                     data = {
@@ -64,7 +66,7 @@ $(function(){
                     };
                     var player = gameworld.gameEngine.playersB2d.get(myPlayerId);
                     var playerEnt = gameworld.gameEngine.players.get(myPlayerId);
-                    if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.canDoubleJump)) {
+                    if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
                         socket.emit('server_update', data)
                         // gameworld.gameEngine.jumpPlayer(data);
                     }
