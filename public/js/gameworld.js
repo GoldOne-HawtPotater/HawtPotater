@@ -159,8 +159,8 @@ $(function(){
             }
 
             // Draw player scoring information
-            var position = that.camera.screenToWorld(1100, 50);
-            that.ctx.fillText("Player " + player.playerNum + ": " + player.score, position.x, position.y * (player.playerNum + 1));
+            var position = that.camera.screenToWorld(1100, 50 * (player.playerNum + 1));
+            that.ctx.fillText("Player " + player.playerNum + ": " + player.score, position.x, position.y);
 
             // Draw player name
             that.ctx.fillText("Player " + player.playerNum, player.x, player.y - 50);
@@ -184,7 +184,7 @@ $(function(){
             if (this.startTime > Date.now()) {
                 that.ctx.font = "30px Comic Sans MS";
                 that.ctx.fillStyle = "#ff0000";
-                var position = that.camera.screenToWorld(1000, 50); 
+                var position = that.camera.screenToWorld(350, 50); 
                 that.ctx.fillText("Game Starts In: " + (Math.ceil((this.startTime - Date.now()) / 1000)) + " seconds", position.x, position.y);
             } else {
                 that.ctx.font = "25px Comic Sans MS";
