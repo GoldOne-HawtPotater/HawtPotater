@@ -250,8 +250,12 @@
         if (data.objectCollided.type == "PLAYER") {
             data.gameEngine.players.get(data.objectCollided.id).score += 1;
         } else if (data.objectCollided.type == "PLATFORM" && this.y >= 100) {
-            data.gameEngine.graveyard.push({entityId: this.id});
-            data.gameEngine.potatoCreationQueue.push({ x: Math.random() * (1100 - 200) + 200, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000});
+            data.gameEngine.graveyard.push({ entityId: this.id });
+
+            // Uncomment the following line to spawn a new potato in a random spot on respawn
+            // data.gameEngine.potatoCreationQueue.push({ x: Math.random() * (1100 - 200) + 200, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
+
+            data.gameEngine.potatoCreationQueue.push({ x: 550, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
         }
     }
 

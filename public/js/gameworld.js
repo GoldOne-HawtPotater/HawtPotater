@@ -26,7 +26,7 @@ $(function(){
         this.surfaceHeight = 720;
         this.gameStarted = false;
         this.startTime = null;
-        this.displayStartTimer = false;
+        this.endTime = null;
         this.roomMasterWorld = false;
         this.ctx = null;
 
@@ -65,10 +65,13 @@ $(function(){
                     // Get a random number between 1 and the TileMaps.length - 1
                     that.mapNum = Math.ceil(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1) + 1); //Math.floor(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1)) + 1;
                     var setStartTime = Date.now() + 5000;
+                    var setEndTime = Date.now() + 300000;
+                    that.endTime = setEndTime;
                     that.startTime = setStartTime;
                     var data = {
                         mapNum: that.mapNum,
-                        time: setStartTime
+                        time: setStartTime,
+                        endTime: setEndTime
                     };
                     that.gameStarted = true;
                     that.gameEngine.setGame(data);
@@ -140,18 +143,25 @@ $(function(){
 
         /** Draw Timers (if necessary) **/
 
-        // Timer for game start countdown
-        if (this.gameStarted && this.startTime > Date.now()) {
-            that.ctx.font = "30px Comic Sans MS";
-            that.ctx.fillStyle = "#ff0000";
-            that.ctx.fillText("Game Starts In: " + (Math.ceil((this.startTime - Date.now()) / 1000)) + " seconds", 250, 50);
+        // Timer for game start countdown and match timer
+        if (this.gameStarted) {
+            if (this.startTime > Date.now()) {
+                that.ctx.font = "30px Comic Sans MS";
+                that.ctx.fillStyle = "#ff0000";
+                that.ctx.fillText("Game Starts In: " + (Math.ceil((this.startTime - Date.now()) / 1000)) + " seconds", 250, 50);
+            } else {
+                that.ctx.font = "25px Comic Sans MS";
+                that.ctx.fillStyle = "#000000";
+                that.ctx.fillText("Time Left: " + (Math.ceil((this.endTime - Date.now()) / 1000)) + " seconds", 540, 25);
+            }
+
         }
 
         // Timer for the dropping of a new "main" potato (potato not spawned by a power up) 
         if (this.gameEngine.potatoCreationQueue.length > 0) {
             // We do not need to check for null array elements for the time being since we flush the creationQueue 
             // on every update and if the queue is larger than 0 we are guaranteed an element in position 0. 
-            that.ctx.fillText("New Potato In: " + (Math.ceil((this.gameEngine.potatoCreationQueue[0].timeToDrop - Date.now()) / 1000)) + " seconds", 250, 50);
+            that.ctx.fillText("New Potato In: " + (Math.ceil((this.gameEngine.potatoCreationQueue[0].timeToDrop - Date.now()) / 1000)) + " seconds", 250, 70);
         }
 
         if (drawCallback) {

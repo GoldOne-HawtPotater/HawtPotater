@@ -29,6 +29,7 @@
         this.platformsB2d = [];
         this.graveyard = [];
         this.potatoCreationQueue = [];
+        this.endGameTime = null;
         this.surfaceWidth = 1280;
         this.surfaceHeight = 720;
         this.SCALE = 100;
@@ -72,7 +73,8 @@
                 setTimeout(pauseLoop, 1);
             } else {
                 that.myGameState = that.gameStates.playing;
-                that.potatoCreationQueue.push({x: 325, y: 25, time: data.time, timeToDrop: Date.now() + 5000});
+                that.potatoCreationQueue.push({ x: 325, y: 25, time: data.time, timeToDrop: Date.now() + 5000 });
+                that.endGameTime = data.endTime;
             }
         })();
         // while(Date.now() < data.time);
@@ -148,6 +150,7 @@
 
             // if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 + ' - The x,y is (' + player.x + ',' + player.y + ')');
         });
+
         // console.log('Clock tick = ' + that.clockTick);
     };
 
@@ -398,7 +401,7 @@
 
                 // fixture definition and shape definition for fixture
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
-        fixDef.density = 0.5;
+        fixDef.density = 0.01;
         fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(30 / 2 / this.SCALE);
         // fixDef.shape.SetAsBox(
         //     30 / 2 / this.SCALE,
