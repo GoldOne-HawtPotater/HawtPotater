@@ -128,10 +128,17 @@ $(function(){
             this.gameMaps[0].drawMap(that.ctx);
             this.ctx.font = "20px Comic Sans MS";
             this.ctx.fillStyle = "#ff0000";
-            this.ctx.fillText("Lobby Mode", 400, 50);
+            var position = this.camera.screenToWorld(400, 50);
+            this.ctx.fillText("Lobby Mode", position.x, position.y);
             this.ctx.font = "14px Comic Sans MS"
-            this.ctx.fillText("Waiting for all Players to be Ready", 400, 100);
+            position = this.camera.screenToWorld(400, 100);
+            this.ctx.fillText("Waiting for all Players to be Ready", position.x, position.y);
         }
+
+        this.ctx.font = "20px Comic Sans MS";
+        this.ctx.fillStyle = "#ff0000";        
+        var position = this.camera.screenToWorld(1100, 50);
+        this.ctx.fillText("Scoreboard: ", position.x, position.y);
 
         /** Draw random entities **/
         this.gameEngine.entities.forEach(function(entity) {
@@ -144,10 +151,6 @@ $(function(){
             that.camypos.max = that.camypos.max > entity.y - offset? that.camypos.max : entity.y - offset;
         });
 
-        this.ctx.font = "20px Comic Sans MS";
-        this.ctx.fillStyle = "#ff0000";        
-        this.ctx.fillText("Scoreboard: ", 1100, 50);
-
         /** Draw Players **/
         this.gameEngine.players.forEach(function(player) {
             player.draw(that.ctx, that.gameEngine.clockTick);
@@ -156,7 +159,8 @@ $(function(){
             }
 
             // Draw player scoring information
-            that.ctx.fillText("Player " + player.playerNum + ": " + player.score, 1100, 50 * (player.playerNum + 1));
+            var position = that.camera.screenToWorld(1100, 50);
+            that.ctx.fillText("Player " + player.playerNum + ": " + player.score, position.x, position.y * (player.playerNum + 1));
 
             // Draw player name
             that.ctx.fillText("Player " + player.playerNum, player.x, player.y - 50);
@@ -171,10 +175,6 @@ $(function(){
             that.camxpos.max = that.camxpos.max > player.x ? that.camxpos.max : player.x;
             that.camypos.min = that.camypos.min < player.y ? that.camypos.min : player.y;
             that.camypos.max = that.camypos.max > player.y ? that.camypos.max : player.y;
-            // Draw scoring information
-            that.ctx.font = "20px Georgia";
-            that.ctx.fillStyle = "#ff0000";
-            that.ctx.fillText("Score: " + player.score, 1100, 50);
         });
 
         /** Draw Timers (if necessary) **/
@@ -184,11 +184,13 @@ $(function(){
             if (this.startTime > Date.now()) {
                 that.ctx.font = "30px Comic Sans MS";
                 that.ctx.fillStyle = "#ff0000";
-                that.ctx.fillText("Game Starts In: " + (Math.ceil((this.startTime - Date.now()) / 1000)) + " seconds", 250, 50);
+                var position = that.camera.screenToWorld(1000, 50); 
+                that.ctx.fillText("Game Starts In: " + (Math.ceil((this.startTime - Date.now()) / 1000)) + " seconds", position.x, position.y);
             } else {
                 that.ctx.font = "25px Comic Sans MS";
                 that.ctx.fillStyle = "#000000";
-                that.ctx.fillText("Time Left: " + (Math.ceil((this.endTime - Date.now()) / 1000)) + " seconds", 540, 25);
+                var position = that.camera.screenToWorld(540, 25);
+                that.ctx.fillText("Time Left: " + (Math.ceil((this.endTime - Date.now()) / 1000)) + " seconds", position.x, position.y);
             }
 
         }
@@ -197,7 +199,8 @@ $(function(){
         if (this.gameEngine.potatoCreationQueue.length > 0) {
             // We do not need to check for null array elements for the time being since we flush the creationQueue 
             // on every update and if the queue is larger than 0 we are guaranteed an element in position 0. 
-            that.ctx.fillText("New Potato In: " + (Math.ceil((this.gameEngine.potatoCreationQueue[0].timeToDrop - Date.now()) / 1000)) + " seconds", 250, 70);
+            var position = that.camera.screenToWorld(250, 70);
+            that.ctx.fillText("New Potato In: " + (Math.ceil((this.gameEngine.potatoCreationQueue[0].timeToDrop - Date.now()) / 1000)) + " seconds", position.x, position.y);
         }
 
         if (drawCallback) {
