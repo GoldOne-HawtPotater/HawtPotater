@@ -1,5 +1,3 @@
-
-
 $(function(){
     // Get asset manager.
     window.ASSET_MANAGER = new AssetManager();
@@ -30,12 +28,16 @@ $(function(){
         this.roomMasterWorld = false;
         this.ctx = null;
 
+        this.camxpos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
+        this.camypos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
+
         this.debug = true;
     }
     window.GameWorld = GameWorld;
 
     GameWorld.prototype.init = function (ctx) {
         this.ctx = ctx;
+        this.camera = new Camera(ctx);
 
         // Add the maps to gameMaps array
         // this.lobbyMap = new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']);
@@ -88,8 +90,29 @@ $(function(){
 
     GameWorld.prototype.draw = function (drawCallback) {
         var that = this;
-        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-        this.ctx.save();
+        this.camera.begin();
+        // this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        // this.ctx.save();
+                                          
+        if (this.camxpos.min && this.camxpos.max && this.camypos.min && this.camypos.max) {
+            var minPosition = {x: this.camxpos.min, y: this.camypos.min};
+            var maxPosition = {x: this.camxpos.max, y: this.camypos.max};
+
+            var centerPosition = {
+                x: (minPosition.x + maxPosition.x) / 2,
+                y: (minPosition.y + maxPosition.y) / 2
+            };
+
+            this.camera.moveTo(centerPosition.x, centerPosition.y);
+            // 1000 is the default zoom. 
+            this.camera.zoomTo(1000 * (1 + (maxPosition.x - minPosition.x)/this.ctx.canvas.width) + (maxPosition.y - minPosition.y)/this.ctx.canvas.height);
+            
+
+            // Reset the positions
+            this.camxpos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
+            this.camypos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
+        }
 
         if (this.debug) {
             // b2d debug
@@ -113,6 +136,12 @@ $(function(){
         /** Draw random entities **/
         this.gameEngine.entities.forEach(function(entity) {
             entity.draw(that.ctx, that.gameEngine.clockTick);
+            // Use a offset so the movement isn't so gittery since potato entitiey changes very quickly.
+            var offset = 250;
+            that.camxpos.min = that.camxpos.min < entity.x + offset ? that.camxpos.min : entity.x + offset;
+            that.camxpos.max = that.camxpos.max > entity.x - offset ? that.camxpos.max : entity.x - offset;
+            that.camypos.min = that.camypos.min < entity.y + offset? that.camypos.min : entity.y + offset;
+            that.camypos.max = that.camypos.max > entity.y - offset? that.camypos.max : entity.y - offset;
         });
 
         this.ctx.font = "20px Comic Sans MS";
@@ -122,7 +151,6 @@ $(function(){
         /** Draw Players **/
         this.gameEngine.players.forEach(function(player) {
             player.draw(that.ctx, that.gameEngine.clockTick);
-
             if (player.isReady) {
                 that.ctx.fillStyle = "#00ff00";
             }
@@ -139,6 +167,14 @@ $(function(){
                 that.ctx.fillStyle = "#0000ff";
                 that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 25);
             }
+            that.camxpos.min = that.camxpos.min < player.x ? that.camxpos.min : player.x;
+            that.camxpos.max = that.camxpos.max > player.x ? that.camxpos.max : player.x;
+            that.camypos.min = that.camypos.min < player.y ? that.camypos.min : player.y;
+            that.camypos.max = that.camypos.max > player.y ? that.camypos.max : player.y;
+            // Draw scoring information
+            that.ctx.font = "20px Georgia";
+            that.ctx.fillStyle = "#ff0000";
+            that.ctx.fillText("Score: " + player.score, 1100, 50);
         });
 
         /** Draw Timers (if necessary) **/
@@ -168,7 +204,8 @@ $(function(){
             drawCallback(this);
         }
 
-        this.ctx.restore();
+        // this.ctx.restore();     
+        this.camera.end();   
     }
 
     GameWorld.prototype.loop = function () {
