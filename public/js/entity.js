@@ -54,10 +54,9 @@
     }
 
     /** Power Up Class **/
-    /** Not used yet **/
-    var PowerUp = function (powerUpData) {
+    var PowerUp = function (x, y) {
         this.rotation = 0;
-        Entity.call(this, powerUpData.x, powerUpData.y, Date.now());
+        Entity.call(this, x, y, Date.now());
     }
 
     PowerUp.prototype = new Entity();
@@ -72,7 +71,16 @@
         this.sprite.drawImage(ctx, this.x, this.y);
     }
 
-    PowerUp.prototype.givePower = function(data) {
+    PowerUp.prototype.processCollision = function (data) {
+        // Power Up has collided with a Player
+        // Add this Power Up to the graveyard for deletion and grant the Player the Power
+        if (data.objectCollided.type == "PLAYER") {
+            data.gameEngine.graveyard.push({ entityId: this.id });
+            this.givePower({ gameEngine: data.gameEngine, playerId: data.objectCollided.id });
+        }
+    }
+
+    PowerUp.prototype.givePower = function () {
 
     }
 
@@ -89,11 +97,10 @@
         }
         this.width = 64;
         this.height = 64;
-        this.rotation = 0;
-        Entity.call(this, powerUpData.x, powerUpData.y, Date.now());
+        PowerUp.call(this, powerUpData.x, powerUpData.y);
     }
 
-    MultiJumpPowerUp.prototype = new Entity();
+    MultiJumpPowerUp.prototype = new PowerUp();
     MultiJumpPowerUp.prototype.constructor = MultiJumpPowerUp;
 
     MultiJumpPowerUp.prototype.update = function () {
@@ -106,7 +113,8 @@
     }
 
     MultiJumpPowerUp.prototype.givePower = function(data) {
-
+        data.gameEngine.players.get(data.playerId).multiJumpCounter += 10;
+        PowerUp.prototype.givePower.call(this);
     }
 
     MultiJumpPowerUp.prototype.syncEntity = function (entity) {
@@ -140,7 +148,7 @@
         this.isMovingRight = false;
         this.direction = 1;
         this.score = 0;
-        this.canDoubleJump = false;
+        this.multiJumpCounter = 0;
         this.attackSteps = 0;
         // this.moveSpeed = 200;
         this.width = playerObj.width;
@@ -237,6 +245,19 @@
         Entity.prototype.syncEntity.call(this, entity);
         this.rotation = entity.rotation;
         this.velocity = entity.velocity;
+    }
+
+    Potato.prototype.processCollision = function (data) {
+        if (data.objectCollided.type == "PLAYER") {
+            data.gameEngine.players.get(data.objectCollided.id).score += 1;
+        } else if (data.objectCollided.type == "PLATFORM" && this.y >= 100) {
+            data.gameEngine.graveyard.push({ entityId: this.id });
+
+            // Uncomment the following line to spawn a new potato in a random spot on respawn
+            // data.gameEngine.potatoCreationQueue.push({ x: Math.random() * (1100 - 200) + 200, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
+
+            data.gameEngine.potatoCreationQueue.push({ x: 550, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
+        }
     }
 
     // Add entities to the collection.
