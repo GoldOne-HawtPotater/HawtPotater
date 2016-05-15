@@ -20,8 +20,8 @@ $(function(){
 
     var GameWorld = function () {
         this.gameEngine = new GameEngine();
-        this.surfaceWidth = 1280;
-        this.surfaceHeight = 720;
+        // this.surfaceWidth = 1280;
+        // this.surfaceHeight = 720;
         this.gameStarted = false;
         this.startTime = null;
         this.endTime = null;
@@ -44,6 +44,8 @@ $(function(){
         this.gameMaps = [];
         this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']));
         this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map02']));
+        // this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map03']));
+
 
         if (this.debug) {
             //setup debug draw
@@ -66,6 +68,8 @@ $(function(){
                     // Randomly choose a map.
                     // Get a random number between 1 and the TileMaps.length - 1
                     that.mapNum = Math.ceil(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1) + 1); //Math.floor(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1)) + 1;
+                    console.log('Map number chosen = ' + that.mapNum);
+
                     var setStartTime = Date.now() + 5000;
                     var setEndTime = Date.now() + 300000;
                     that.endTime = setEndTime;

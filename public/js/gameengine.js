@@ -30,8 +30,8 @@
         this.graveyard = [];
         this.potatoCreationQueue = [];
         this.endGameTime = null;
-        this.surfaceWidth = 1280;
-        this.surfaceHeight = 720;
+        // this.surfaceWidth = 1280;
+        // this.surfaceHeight = 720;
         this.SCALE = 100;
         this.clockTick = 0;
         this.timer = new Timer();
