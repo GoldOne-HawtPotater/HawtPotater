@@ -42,9 +42,9 @@ $(function(){
         // Add the maps to gameMaps array
         // this.lobbyMap = new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']);
         this.gameMaps = [];
-        this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']));
-        this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map02']));
-        // this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map03']));
+        for (key in TileMaps) {
+            this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps[key]));
+        }
 
 
         if (this.debug) {
@@ -74,6 +74,8 @@ $(function(){
                     var setEndTime = Date.now() + 300000;
                     that.endTime = setEndTime;
                     that.startTime = setStartTime;
+
+                    that.mapNum = "3"; // Testing map 3
                     var data = {
                         theFunc: 'setGame',
                         mapNum: that.mapNum,
@@ -131,6 +133,9 @@ $(function(){
         if (this.gameEngine.myGameState != this.gameEngine.gameStates.waiting) {
             /** Draw map **/
             this.gameMaps[this.mapNum-1].drawMap(that.ctx);
+            this.gameEngine.movingPlatforms.forEach(function (platform) {
+                platform.draw(that.ctx, that.gameEngine.clockTick);
+            });
         } else {
             /** Draw lobby **/
             this.gameMaps[0].drawMap(that.ctx);
