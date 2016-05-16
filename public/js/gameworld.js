@@ -75,12 +75,16 @@ $(function(){
                     that.endTime = setEndTime;
                     that.startTime = setStartTime;
                     var data = {
+                        theFunc: 'setGame',
                         mapNum: that.mapNum,
                         time: setStartTime,
                         endTime: setEndTime
                     };
                     that.gameStarted = true;
-                    that.gameEngine.setGame(data);
+
+
+                    socket.emit('server_update', data);
+                    // that.gameEngine.setGame(data);
                 }
             }, 2000);
         }
