@@ -581,8 +581,7 @@
             var playerBody = that.playersB2d.get(player.playerId); 
             var position = new Box2D.Common.Math.b2Vec2(
                 (400 + index * 2 * player.width) / that.SCALE, 
-                900 / that.SCALE
-                // 500 / that.SCALE
+                500 / that.SCALE
                 );
             playerBody.SetPosition(position);
             player.x = playerBody.GetPosition().x * that.SCALE;
