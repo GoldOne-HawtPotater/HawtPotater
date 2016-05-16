@@ -5,7 +5,7 @@
     this.distance = 1000.0;
     this.lookat = [0,0];
     this.context = context;
-    this.fieldOfView = settings.fieldOfView || Math.PI / 3;//3.5;
+    this.fieldOfView = settings.fieldOfView || Math.PI / 3.5;
     this.viewport = {
       left: 0,
       right: 0,

@@ -75,7 +75,6 @@ $(function(){
                     that.endTime = setEndTime;
                     that.startTime = setStartTime;
 
-                    that.mapNum = "3"; // Testing map 3
                     var data = {
                         theFunc: 'setGame',
                         mapNum: that.mapNum,
