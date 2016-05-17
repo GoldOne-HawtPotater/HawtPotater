@@ -15,7 +15,8 @@
         Background = EntityCollection.Background,
         Potato = EntityCollection.Potato,
         HawtDogge = EntityCollection.HawtDogge,
-        MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp;
+        MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp,
+        MovingPlatform = EntityCollection.MovingPlatform;
 
 
       /////////////////////////////////////////////////
@@ -30,8 +31,10 @@
         this.graveyard = [];
         this.potatoCreationQueue = [];
         this.endGameTime = null;
-        this.surfaceWidth = 1280;
-        this.surfaceHeight = 720;
+        this.movingPlatforms = [];
+        this.movingPlatformsB2d = [];
+        // this.surfaceWidth = 1280;
+        // this.surfaceHeight = 720;
         this.SCALE = 100;
         this.clockTick = 0;
         this.timer = new Timer();
@@ -116,8 +119,32 @@
         // We "reset" the queue so that we never have any null elements while checking the time in gameWorld
         this.potatoCreationQueue = potatosNotReady;
 
-        /** Random Entities Update **/
         var that = this;
+        /** Update the moving platforms **/
+        if (this.myGameState == this.gameStates['playing']){
+            for (var i = 0; i < that.movingPlatforms.length; i++) {
+                var platform = that.movingPlatforms[i];
+                var b2dPlatform = that.movingPlatformsB2d[i];
+
+                if (platform.offset <= 0) {
+                    platform.offset = platform.offsetReset; // reset the offset
+                    platform.directionValue *= -1; // flip the direciton value
+                }
+
+                var vel = b2dPlatform.GetLinearVelocity();
+                if (platform.direction.indexOf('vertical') >= 0) {
+                    vel.y = platform.speed * platform.directionValue;
+                } else {
+                    vel.x = platform.speed * platform.directionValue;
+                }
+                b2dPlatform.SetLinearVelocity(vel);
+                platform.x = b2dPlatform.GetPosition().x * that.SCALE;
+                platform.y = b2dPlatform.GetPosition().y * that.SCALE;
+                platform.offset -= platform.speed;
+            }
+        }
+
+        /** Random Entities Update **/
         this.entities.forEach(function(entity) {
             var body = that.entitiesB2d.get(entity.id);
             entity.x = body.GetPosition().x * that.SCALE - entity.width / 2;
@@ -180,12 +207,17 @@
 
             // Find the collision layer
             var collisionLayer = null, tileLayer = null;
+            var movingTiles = new Map();
+            var movingObjects = new Map();
             for (var i = 0; i < tileMap.layers.length; i++) {
                 if (tileMap.layers[i].name.indexOf('collisionLayer') == 0) {
                     collisionLayer = tileMap.layers[i];
-                }
-                if (tileMap.layers[i].name.indexOf('tileLayer') == 0) {
+                } else if (tileMap.layers[i].name.indexOf('tileLayer') == 0) {
                     tileLayer = tileMap.layers[i];
+                } else if (tileMap.layers[i].name.indexOf('movingTile') == 0) {
+                    movingTiles.set(tileMap.layers[i].name, tileMap.layers[i]);
+                } else if (tileMap.layers[i].name.indexOf('movingObject') == 0) {
+                    movingObjects.set(tileMap.layers[i].name, tileMap.layers[i]);
                 }
             }
 
@@ -213,6 +245,45 @@
                 // Add the b2d platformBody to an array to destroy it in the future.
                 this.platformsB2d.push(platformBody);
             }
+
+            movingTiles.forEach(function(tile) {
+                var colObj = movingObjects.get('movingObject' + tile.name.split('movingTile')[1]).objects[0];
+
+                // Fixture def
+                var fixDef = new Box2D.Dynamics.b2FixtureDef;
+                fixDef.density = 100.0;
+                fixDef.friction = 1;
+                fixDef.restitution = 0;
+
+                // Create the body
+                var bodyDef = new Box2D.Dynamics.b2BodyDef;
+                bodyDef.type = Box2D.Dynamics.b2Body.b2_kinematicBody;
+
+                // position the center of the object
+                bodyDef.position.x = (colObj.x + colObj.width / 2) / that.SCALE;
+                bodyDef.position.y = (colObj.y + colObj.height / 2) / that.SCALE;
+                fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+                fixDef.shape.SetAsBox((colObj.width / that.SCALE) / 2, (colObj.height / that.SCALE) / 2);
+                var platformBody = that.b2dWorld.CreateBody(bodyDef);
+                platformBody.CreateFixture(fixDef);
+                platformBody.SetUserData({
+                    type: "MOVING_PLATFORM"
+                });
+
+                that.movingPlatformsB2d.push(platformBody);
+
+                var data = {
+                    tileset: tileMap.tilesets[0],
+                    tiles: tile.data.filter(function(value) { return value > 0; }),
+                    type: colObj.type
+                }
+                that.movingPlatforms.push(new MovingPlatform(
+                    colObj.x + colObj.width / 2, 
+                    colObj.y + colObj.height / 2,
+                    data
+                    ));
+            }); 
+
         } else {
             console.log("TileMaps is undefined. + \nData: " + TileMaps);
         }

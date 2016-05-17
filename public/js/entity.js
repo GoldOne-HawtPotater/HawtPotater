@@ -38,7 +38,6 @@
     /** Background Test **/
     function Background() {
         Entity.call(this, 0, 0);
-        this.radius = 200;
     }
 
     Background.prototype = new Entity();
@@ -51,6 +50,54 @@
         ctx.fillStyle = "SaddleBrown";
         ctx.fillRect(0,300,800,300);
         Entity.prototype.draw.call(this);
+    }
+
+    // Moving platforms
+    function MovingPlatform(x, y, data) {
+        this.tileset = data.tileset;
+        this.tiles = data.tiles;
+        var type = [];
+        if (data.type.indexOf('-') >= 0) {
+            type = data.type.split('-');
+            this.directionValue = -1;
+        } else {
+            type = data.type.split('+');
+            this.directionValue = 1;
+        }
+        this.direction = type[0];
+        this.offsetReset = type[1];
+        this.offset = type[1];
+        this.speed = (type.length > 3) ? type[2] : 1;
+        this.delay = (type.length > 4) ? type[3] : 0;
+        this.tileHeight = this.tileset.tileheight;
+        this.tileWidth = this.tileset.tilewidth;
+
+        Entity.call(this, x, y);
+    }
+
+    MovingPlatform.prototype = new Entity();
+    MovingPlatform.prototype.constructor = MovingPlatform;
+
+    MovingPlatform.prototype.update = function () {
+
+    }
+
+    MovingPlatform.prototype.draw = function (ctx) {
+        var spriteSheet = ASSET_MANAGER.getAsset(this.tileset.image);
+        var tileHeight = this.tileHeight;
+        var tileWidth = this.tileWidth;
+        var tileset = this.tileset;
+
+        for (var i = 0; i < this.tiles.length; i++) {
+            var xindex = (this.tiles[i]-1) % tileset.columns;
+            var yindex = Math.floor((this.tiles[i]-1) / tileset.columns);
+            ctx.drawImage(spriteSheet,
+                          xindex * tileWidth, yindex * tileHeight,  // source from sheet
+                          tileWidth, tileHeight,
+                          this.x + i * tileWidth - tileWidth*1.5, this.y - tileHeight/2,
+                          tileWidth, tileHeight
+                          );
+        }
     }
 
     /** Power Up Class **/
@@ -267,6 +314,7 @@
     EntityCollection.Background = Background;
     EntityCollection.Potato = Potato;
     EntityCollection.HawtDogge = HawtDogge;
+    EntityCollection.MovingPlatform = MovingPlatform;
 
     // Set the entity collection for our clients/server.
     exports.EntityCollection = EntityCollection;

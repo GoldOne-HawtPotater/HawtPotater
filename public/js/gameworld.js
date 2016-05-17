@@ -20,8 +20,8 @@ $(function(){
 
     var GameWorld = function () {
         this.gameEngine = new GameEngine();
-        this.surfaceWidth = 1280;
-        this.surfaceHeight = 720;
+        // this.surfaceWidth = 1280;
+        // this.surfaceHeight = 720;
         this.gameStarted = false;
         this.startTime = null;
         this.endTime = null;
@@ -42,8 +42,10 @@ $(function(){
         // Add the maps to gameMaps array
         // this.lobbyMap = new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']);
         this.gameMaps = [];
-        this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']));
-        this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map02']));
+        for (key in TileMaps) {
+            this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps[key]));
+        }
+
 
         if (this.debug) {
             //setup debug draw
@@ -66,17 +68,24 @@ $(function(){
                     // Randomly choose a map.
                     // Get a random number between 1 and the TileMaps.length - 1
                     that.mapNum = Math.ceil(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1) + 1); //Math.floor(Math.random() * (Object.getOwnPropertyNames(TileMaps).length - 1)) + 1;
+                    console.log('Map number chosen = ' + that.mapNum);
+
                     var setStartTime = Date.now() + 5000;
                     var setEndTime = Date.now() + 300000;
                     that.endTime = setEndTime;
                     that.startTime = setStartTime;
+
                     var data = {
+                        theFunc: 'setGame',
                         mapNum: that.mapNum,
                         time: setStartTime,
                         endTime: setEndTime
                     };
                     that.gameStarted = true;
-                    that.gameEngine.setGame(data);
+
+
+                    socket.emit('server_update', data);
+                    // that.gameEngine.setGame(data);
                 }
             }, 2000);
         }
@@ -123,6 +132,9 @@ $(function(){
         if (this.gameEngine.myGameState != this.gameEngine.gameStates.waiting) {
             /** Draw map **/
             this.gameMaps[this.mapNum-1].drawMap(that.ctx);
+            this.gameEngine.movingPlatforms.forEach(function (platform) {
+                platform.draw(that.ctx, that.gameEngine.clockTick);
+            });
         } else {
             /** Draw lobby **/
             this.gameMaps[0].drawMap(that.ctx);

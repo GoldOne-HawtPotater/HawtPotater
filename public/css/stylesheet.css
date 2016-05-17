@@ -166,8 +166,6 @@ body {
 
 
 /* ------ Home ------ */
-
-
 .homesection {
 	text-align:center;
 	margin-top:140px;
@@ -202,6 +200,39 @@ body {
 	text-decoration: none;
 	margin-bottom: 70px;
 	color: #eeffff;
+}
+#join {
+	margin-bottom: 0px;
+}
+#joinGameList {
+	width: 300px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.joinInfo {
+	display: inline-block;
+}
+
+.joinNumber {
+	width: 50%;
+}
+
+.joinSize {
+	width: 24%;
+}
+
+.joinStatus {
+	height: 24%;
+}
+.joinGameLink {
+	color: #707368;
+	text-decoration: none;
+	display: block;
+	border: 1px solid #707368;
+	padding: 3px;
+}
+.joinGameLink:hover {
+	color: #70b1d1;
 }
 #create:visited, #join:visited {
 	color: #eeffff;

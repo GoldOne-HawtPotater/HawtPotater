@@ -34,12 +34,24 @@
 					<div id="big">Create a Game!</div>
 				</div>
 			</a>
-			<a title="Join" href="/join" id="join">
+			<div title="Join" id="join">
 				<div id="joinbutton">
 					<div id="big">Join a Game!</div>
 				</div>
-			</a>
+			</div>
+			<div id="joinGameList">
+				<div>
+					<div class="joinInfo joinNumber">Room Number</div>
+					<div class="joinInfo joinSize">Size</div>
+					<div class="joinInfo joinStatus">Status</div>
+				</div>
+				<div id="gameListContainer"></div>
+			</div>
 		</div>
 	</section>
+
+	<script src="../js/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="../js/home.js"></script>
 </body>
 </html>
