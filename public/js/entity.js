@@ -302,8 +302,9 @@
 
             // Uncomment the following line to spawn a new potato in a random spot on respawn
             // data.gameEngine.potatoCreationQueue.push({ x: Math.random() * (1100 - 200) + 200, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
-
-            data.gameEngine.potatoCreationQueue.push({ x: 550, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
+            if (data.gameEngine.myGameState == data.gameEngine.gameStates.playing) {
+                data.gameEngine.potatoCreationQueue.push({ x: 550, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
+            }
         }
     }
 

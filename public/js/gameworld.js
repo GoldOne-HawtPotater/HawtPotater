@@ -22,12 +22,9 @@ $(function(){
         this.gameEngine = new GameEngine();
         // this.surfaceWidth = 1280;
         // this.surfaceHeight = 720;
-        this.gameStarted = false;
         this.startTime = null;
-        this.endTime = null;
         this.roomMasterWorld = false;
         this.ctx = null;
-
         this.camxpos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
         this.camypos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
 
@@ -71,9 +68,9 @@ $(function(){
                     console.log('Map number chosen = ' + that.mapNum);
 
                     var setStartTime = Date.now() + 5000;
-                    var setEndTime = Date.now() + 300000;
-                    that.endTime = setEndTime;
+                    var setEndTime = Date.now() + 15000;
                     that.startTime = setStartTime;
+                    //var setEndTime = Date.now() + 300000;
 
                     var data = {
                         theFunc: 'setGame',
@@ -81,7 +78,6 @@ $(function(){
                         time: setStartTime,
                         endTime: setEndTime
                     };
-                    that.gameStarted = true;
 
 
                     socket.emit('server_update', data);
@@ -157,10 +153,10 @@ $(function(){
             entity.draw(that.ctx, that.gameEngine.clockTick);
             // Use a offset so the movement isn't so gittery since potato entitiey changes very quickly.
             var offset = 250;
-            that.camxpos.min = that.camxpos.min < entity.x + offset ? that.camxpos.min : entity.x + offset;
-            that.camxpos.max = that.camxpos.max > entity.x - offset ? that.camxpos.max : entity.x - offset;
-            that.camypos.min = that.camypos.min < entity.y + offset? that.camypos.min : entity.y + offset;
-            that.camypos.max = that.camypos.max > entity.y - offset? that.camypos.max : entity.y - offset;
+            // that.camxpos.min = that.camxpos.min < entity.x + offset ? that.camxpos.min : entity.x + offset;
+            // that.camxpos.max = that.camxpos.max > entity.x - offset ? that.camxpos.max : entity.x - offset;
+            // that.camypos.min = that.camypos.min < entity.y + offset? that.camypos.min : entity.y + offset;
+            // that.camypos.max = that.camypos.max > entity.y - offset? that.camypos.max : entity.y - offset;
         });
 
         /** Draw Players **/
@@ -192,20 +188,18 @@ $(function(){
         /** Draw Timers (if necessary) **/
 
         // Timer for game start countdown and match timer
-        if (this.gameStarted) {
-            if (this.startTime > Date.now()) {
+        if (this.gameEngine.myGameState == this.gameEngine.gameStates.settingup) {
                 that.ctx.font = "30px Comic Sans MS";
                 that.ctx.fillStyle = "#ff0000";
                 var position = that.camera.screenToWorld(350, 50); 
                 that.ctx.fillText("Game Starts In: " + (Math.ceil((this.startTime - Date.now()) / 1000)) + " seconds", position.x, position.y);
-            } else {
-                that.ctx.font = "25px Comic Sans MS";
+        } else if (this.gameEngine.myGameState == this.gameEngine.gameStates.playing) {
+        	    that.ctx.font = "25px Comic Sans MS";
                 that.ctx.fillStyle = "#000000";
                 var position = that.camera.screenToWorld(540, 25);
-                that.ctx.fillText("Time Left: " + (Math.ceil((this.endTime - Date.now()) / 1000)) + " seconds", position.x, position.y);
-            }
-
+                that.ctx.fillText("Time Left: " + (Math.ceil((this.gameEngine.endGameTime - Date.now()) / 1000)) + " seconds", position.x, position.y);
         }
+
 
         // Timer for the dropping of a new "main" potato (potato not spawned by a power up) 
         if (this.gameEngine.potatoCreationQueue.length > 0) {

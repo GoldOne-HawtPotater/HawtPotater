@@ -68,6 +68,8 @@
         this.resetPlayerPositions();
         // Create the platforms for the given map.
         this.createPlatforms({map: 'map0' + data.mapNum});
+
+        this.endGameTime = data.endTime;
         // Wait until the current time is greater than the time given by the server.
         // This is basically a pause momet so we can drop the potato at the exact time
         // for everyone. 
@@ -77,7 +79,6 @@
             } else {
                 that.myGameState = that.gameStates.playing;
                 that.potatoCreationQueue.push({ x: 325, y: 25, time: data.time, timeToDrop: Date.now() + 5000 });
-                that.endGameTime = data.endTime;
             }
         })();
         // while(Date.now() < data.time);
@@ -89,13 +90,11 @@
     GameEngine.prototype.update = function () {
         this.clockTick = this.timer.tick();
         /** Update the b2dWorld **/
-        if (this.myGameState != this.gameStates.settingup) {
-            this.b2dWorld.Step(
-                1 / 60      //frame-rate
-                ,  10       //velocity iterations
-                ,  10       //position iterations
-            );
-        }
+        this.b2dWorld.Step(
+            1 / 60      //frame-rate
+            ,  10       //velocity iterations
+            ,  10       //position iterations
+        );
 
         /** Removes Entities from the world that need to be removed **/
         for (var x = 0; x < this.graveyard.length; x++) {
@@ -182,6 +181,18 @@
             // if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 + ' - The x,y is (' + player.x + ',' + player.y + ')');
         });
 
+        // If this games end time is < Date.now(), we need to end the game
+        if (this.endGameTime != null && this.endGameTime < Date.now()) {
+            this.myGameState = this.gameStates.waiting;
+            this.endGameTime = null;
+            this.resetPlayerPositions(); 
+            this.players.forEach(function(player) {
+                player.isReady = false;
+            }); 
+            this.createPlatforms({});
+            // clear the room  
+        }
+
         // console.log('Clock tick = ' + that.clockTick);
     };
 
@@ -196,6 +207,13 @@
             plat.GetWorld().DestroyBody(plat);
         });
         this.platformsB2d = [];
+
+        this.movingPlatformsB2d.forEach(function (plat, index, array) {
+            // that.b2dWorld.DestroyBody(plat);
+            plat.GetWorld().DestroyBody(plat);
+        });
+        this.movingPlatFormsB2d = [];
+        this.movingPlatforms = [];
 
         // If data does not exist. Draw the lobby map.
         if (!data.map) data.map = 'map01'; 
@@ -236,6 +254,7 @@
                 bodyDef.position.y = (colObj.y + colObj.height / 2) / this.SCALE;
                 fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
                 fixDef.shape.SetAsBox((colObj.width / this.SCALE) / 2, (colObj.height / this.SCALE) / 2);
+                fixDef.filter.categoryBits = 0x001; 
                 var platformBody = this.b2dWorld.CreateBody(bodyDef);
                 platformBody.CreateFixture(fixDef);
                 platformBody.SetUserData({
@@ -367,6 +386,7 @@
             );
         fixDef.friction = 0;
         fixDef.restitution = 0.2;
+        fixDef.filter.categoryBits = 0x004;
         
 
         // create dynamic body
@@ -485,6 +505,7 @@
         
         fixDef.friction = 1;
         fixDef.restitution = 0.9575;
+        fixDef.filter.categoryBits = 0x002;
 
         bodyDef.position.x = data.x / this.SCALE;
         bodyDef.position.y = data.y / this.SCALE;
@@ -523,6 +544,15 @@
             playerBody.SetLinearVelocity(vel);
         }
     };
+
+    GameEngine.prototype.dodge = function(data) {
+        if (data) {
+            var player = this.players.get(data.playerId);
+            var playerBody = this.playerB2d.get(data.playerId);
+            //playerBody.GetFixtureList(); 
+
+        }
+    }
 
     GameEngine.prototype.jumpPlayer = function (data) {
         // console.log(data.playerId + ' is attempting a jump.');
