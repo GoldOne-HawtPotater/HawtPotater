@@ -56,15 +56,15 @@ $(function(){
                             theFunc: 'toggleReady',
                             playerId: myPlayerId
                         };
-                        socket.emit('server_update', data)
+                        socket.emit('server_update', data);
                     }
                     break;
-                case 50: // {2} key, testing code to spawn powerUp
-                    data = {
-                        theFunc: 'addPowerUps'
-                    };
-                    socket.emit('server_update', data)
-                    break;
+                //case 50: // {2} key, testing code to spawn powerUp
+                //    data = {
+                //        theFunc: 'addPowerUps'
+                //    };
+                //    socket.emit('server_update', data);
+                //    break;
                 case 32: // spacebar (jump)
                     data = {
                         theFunc: 'jumpPlayer',
@@ -75,7 +75,6 @@ $(function(){
                     var playerEnt = gameworld.gameEngine.players.get(myPlayerId);
                     if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
                         socket.emit('server_update', data);
-                        //gameworld.gameEngine.jumpPlayer(data);
                     }
                     break;
                 case 37: //left
@@ -101,6 +100,13 @@ $(function(){
                         socket.emit('server_update', data);
                         // gameworld.gameEngine.movePlayer(data);
                     }
+                    break;
+                case 88: // x key
+                    data = {
+                        theFunc: 'dodge',
+                        playerId: myPlayerId
+                    };
+                    socket.emit('server_update', data);
                     break;
                 case 38: //up
                     break;
