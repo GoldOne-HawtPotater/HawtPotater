@@ -164,6 +164,8 @@ $(function(){
             player.draw(that.ctx, that.gameEngine.clockTick);
             if (player.isReady) {
                 that.ctx.fillStyle = "#00ff00";
+            } else {
+                that.ctx.fillStyle = "#ff0000";
             }
 
             // Draw player scoring information

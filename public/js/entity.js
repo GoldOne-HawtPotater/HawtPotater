@@ -197,6 +197,8 @@
         this.score = 0;
         this.multiJumpCounter = 0;
         this.attackSteps = 0;
+        this.dodgeDuration = 1000;
+        this.dodgeResetTimer;
         // this.moveSpeed = 200;
         this.width = playerObj.width;
         this.height = playerObj.height;

@@ -56,14 +56,14 @@ $(function(){
                             theFunc: 'toggleReady',
                             playerId: myPlayerId
                         };
-                        socket.emit('server_update', data)
+                        socket.emit('server_update', data);
                     }
                     break;
                 case 50: // {2} key, testing code to spawn powerUp
                     data = {
                         theFunc: 'addPowerUps'
                     };
-                    socket.emit('server_update', data)
+                    socket.emit('server_update', data);
                     break;
                 case 32: // spacebar (jump)
                     data = {
@@ -74,7 +74,7 @@ $(function(){
                     var player = gameworld.gameEngine.playersB2d.get(myPlayerId);
                     var playerEnt = gameworld.gameEngine.players.get(myPlayerId);
                     if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
-                        socket.emit('server_update', data)
+                        socket.emit('server_update', data);
                         // gameworld.gameEngine.jumpPlayer(data);
                     }
                     break;
@@ -86,7 +86,7 @@ $(function(){
                         value: true
                     };
                     if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
-                        socket.emit('server_update', data)
+                        socket.emit('server_update', data);
                         // gameworld.gameEngine.movePlayer(data);
                     }
                     break;
@@ -101,6 +101,13 @@ $(function(){
                         socket.emit('server_update', data);
                         // gameworld.gameEngine.movePlayer(data);
                     }
+                    break;
+                case 88: // x key
+                    data = {
+                        theFunc: 'dodge',
+                        playerId: myPlayerId
+                    };
+                    socket.emit('server_update', data);
                     break;
                 case 38: //up
                     break;
