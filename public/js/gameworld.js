@@ -68,7 +68,7 @@ $(function(){
                     console.log('Map number chosen = ' + that.mapNum);
 
                     var setStartTime = Date.now() + 5000;
-                    var setEndTime = Date.now() + 35000;
+                    var setEndTime = Date.now() + 15000;
                     that.startTime = setStartTime;
                     //var setEndTime = Date.now() + 300000;
 
@@ -77,8 +77,7 @@ $(function(){
                         mapNum: that.mapNum,
                         time: setStartTime,
                         endTime: setEndTime
-                    };
-
+                    };              
 
                     socket.emit('server_update', data);
                     // that.gameEngine.setGame(data);

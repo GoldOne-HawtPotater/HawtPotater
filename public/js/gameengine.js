@@ -77,6 +77,12 @@
         that.myGameState = that.gameStates.settingup;
         // Reset players ready status and x,y positions
         this.resetPlayerPositions();
+
+        // reset player scores
+        this.players.forEach(function(player) {
+            player.score = 0;
+        });    
+
         // Create the platforms for the given map.
         this.createPlatforms({map: 'map0' + data.mapNum});
 
@@ -252,7 +258,7 @@
             // that.b2dWorld.DestroyBody(plat);
             plat.GetWorld().DestroyBody(plat);
         });
-        this.movingPlatFormsB2d = [];
+        this.movingPlatformsB2d = [];
         this.movingPlatforms = [];
 
         // If data does not exist. Draw the lobby map.
