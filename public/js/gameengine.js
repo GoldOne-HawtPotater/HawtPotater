@@ -548,9 +548,12 @@
         this.entities.delete(data.entityId);
 
         // destory body from the world
-        this.b2dWorld.DestroyBody(this.entitiesB2d.get(data.entityId));
-        console.log("Attempted to remove entity with ID: " + data.entityId);
-        this.entitiesB2d.delete(data.entityId);
+        var body = this.entitiesB2d.get(data.entityId);
+        if (body) {
+            this.b2dWorld.DestroyBody(this.entitiesB2d.get(data.entityId));
+            console.log("Attempted to remove entity with ID: " + data.entityId);
+            this.entitiesB2d.delete(data.entityId);
+        }
     }
 
     GameEngine.prototype.addPowerUps = function (data) {
