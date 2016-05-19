@@ -16,7 +16,10 @@
         Potato = EntityCollection.Potato,
         HawtDogge = EntityCollection.HawtDogge,
         MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp,
-        MovingPlatform = EntityCollection.MovingPlatform;
+        MovingPlatform = EntityCollection.MovingPlatform,
+        HawtSheep = EntityCollection.HawtSheep,
+        HawtChicken = EntityCollection.HawtChicken,
+        HawtPig = EntityCollection.HawtPig;
 
 
       /////////////////////////////////////////////////
@@ -418,18 +421,26 @@
         bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
         bodyDef.fixedRotation = true
 
-        // var width, height;
-        // if (dog) {
-        //      width = 83; height = 52;
-        // }
-
         // fixture definition and shape definition for fixture
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
         fixDef.density = 1;
         fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
+        if (!data.character || data.character == EntityCollection.GameCharacters['HawtDogge']) {
+            data.width = 83;
+            data.height = 52;
+        } else if (data.character == EntityCollection.GameCharacters['HawtSheep']) {
+            data.width = 91;
+            data.height = 60;
+        } else if (data.character == EntityCollection.GameCharacters['HawtChicken']) {
+            data.width = 73;
+            data.height = 77;
+        } else if (data.character == EntityCollection.GameCharacters['HawtPig']) {
+            data.width = 67;
+            data.height = 61;
+        }
         fixDef.shape.SetAsBox(
-            83 / 2 / this.SCALE,
-            52 / 2 / this.SCALE
+            data.width / 2 / this.SCALE,
+            data.height / 2 / this.SCALE
             );
         fixDef.friction = 0;
         fixDef.restitution = 0.2;
@@ -472,8 +483,33 @@
         // Keep track of the player box2d body object
         this.playersB2d.set(data.playerId, body);
         // keep track of the player entity
-        this.players.set(data.playerId, new HawtDogge(data));
-        this.players.get(data.playerId).playerNum = this.players.size;
+
+        data.gameCharacters = this.gameCharacters;
+        if (!data.character || data.character == EntityCollection.GameCharacters['HawtDogge']) {
+            this.players.set(data.playerId, new HawtDogge(data));
+        } else if (data.character == EntityCollection.GameCharacters['HawtSheep']) {
+            this.players.set(data.playerId, new HawtSheep(data));
+        } else if (data.character == EntityCollection.GameCharacters['HawtChicken']) {
+            this.players.set(data.playerId, new HawtChicken(data));
+        } else if (data.character == EntityCollection.GameCharacters['HawtPig']) {
+            this.players.set(data.playerId, new HawtPig(data));
+        }
+        // this.players.set(data.playerId, new HawtDogge(data));
+        if (data.playerNum != null && data.playerNum != undefined) {
+            this.players.get(data.playerId).playerNum = data.playerNum;
+        } else {
+            this.players.get(data.playerId).playerNum = this.players.size;
+        }
+    };
+
+    GameEngine.prototype.switchCharacter = function (data) {
+        if (data) {
+            var player = this.players.get(data.playerId);
+            var playerBody = this.playersB2d.get(data.playerId);
+            this.b2dWorld.DestroyBody(playerBody);
+            player.switchCharacter();
+            this.addPlayer(player);
+        }
     };
 
     GameEngine.prototype.removePlayer = function (data) {

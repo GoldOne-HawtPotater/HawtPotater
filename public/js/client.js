@@ -119,6 +119,15 @@ $(function(){
                         playerId: myPlayerId
                     };
                     socket.emit('server_update', data);
+                    break
+                case 81: // q
+                    data = {
+                        theFunc: 'switchCharacter',
+                        playerId: myPlayerId
+                    }
+                    if (!gameworld.gameEngine.players.get(myPlayerId).isReady) {
+                        socket.emit('server_update', data);
+                    }
                     break;
            }
         });
@@ -158,6 +167,7 @@ $(function(){
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
             //... Add more asssets below.
+            // Dog
             var numberOfFrames = 15;
             for (var i = 0; i < numberOfFrames; i++) {
                 ASSET_MANAGER.queueDownload('../img/animals/dog/stand_' + i + '.png');
@@ -165,6 +175,35 @@ $(function(){
             numberOfFrames = 6;
             for (var i = 0; i < numberOfFrames; i++) {
                 ASSET_MANAGER.queueDownload('../img/animals/dog/move_' + i + '.png');
+            }
+            // Sheep
+            numberOfFrames = 3;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/sheep/move_' + i + '.png');
+            }
+            numberOfFrames = 4;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/sheep/stand_' + i + '.png');
+            }
+
+            // Pig
+            numberOfFrames = 2;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/pig/move_' + i + '.png');
+            }
+            numberOfFrames = 3;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/pig/stand_' + i + '.png');
+            }
+
+            // Chicken
+            numberOfFrames = 3;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/chicken/move_' + i + '.png');
+            }
+            numberOfFrames = 4;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/chicken/stand_' + i + '.png');
             }
         };
 

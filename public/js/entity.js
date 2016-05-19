@@ -1,5 +1,11 @@
 (function (exports, isClient) { 
     var EntityCollection = {};
+    EntityCollection.GameCharacters = {
+            HawtDogge: 0,
+            HawtSheep: 1,
+            HawtChicken: 2,
+            HawtPig: 3
+        };
 
     var Entity = function(x, y, id) {
         this.x = x;
@@ -190,10 +196,11 @@
     /** Hawt Potater Player Class **/
     var HawtPlayer = function(playerObj, width, height) {
         // this.moveSpeed = 200;
+        this.character = playerObj.character;
         this.isJumping = false;
         this.isMovingLeft = false;
         this.isMovingRight = false;
-        this.direction = 1;
+        this.direction = (playerObj && playerObj.direction) ? playerObj.direction : 1;
         this.score = 0;
         this.multiJumpCounter = 0;
         this.attackSteps = 0;
@@ -222,6 +229,11 @@
         console.log('Ready toggled.');
     }
 
+    HawtPlayer.prototype.switchCharacter = function() {
+        this.character = (this.character + 1) % 4;
+        console.log("Character switched to: " + this.character);
+    }
+
     HawtPlayer.prototype.syncEntity = function(entity) {
         if (entity.playerId == this.playerId) {
             this.isReady = entity.isReady;
@@ -238,15 +250,13 @@
             this.standingAnimation = new Animation(('../img/animals/dog/stand'), 15, 120, true);
             this.walkingAnimation = new Animation(('../img/animals/dog/move'), 6, 120, true);
         }
-        playerObj.width = 83;
-        playerObj.height = 52;
+        // playerObj.width = 83;
+        // playerObj.height = 52;
+        playerObj.character = EntityCollection.GameCharacters['HawtDogge'];
         HawtPlayer.call(this, playerObj);
     }
 
-    HawtDogge.prototype = new HawtPlayer({
-        width: 83,
-        height: 52
-    });
+    HawtDogge.prototype = new HawtPlayer({width: 83, height: 52, character: EntityCollection.GameCharacters['HawtDogge']});
 
     HawtDogge.prototype.constructor = HawtDogge;
 
@@ -266,6 +276,85 @@
         }
         // HawtPlayer.prototype.draw.call(this, ctx, clockTick);
     }
+
+    var HawtSheep = function(playerObj) {
+        if (isClient) {
+            this.standingAnimation = new Animation(('../img/animals/sheep/stand'), 4, 180, true);
+            this.walkingAnimation = new Animation(('../img/animals/sheep/move'), 3, 180, true);
+        }
+        // playerObj.width = 91;
+        // playerObj.height = 60;
+        playerObj.character = EntityCollection.GameCharacters['HawtSheep'];
+        HawtPlayer.call(this, playerObj);
+    }
+
+    HawtSheep.prototype = new HawtPlayer({width: 91, height: 60, character: EntityCollection.GameCharacters['HawtSheep']});
+
+    HawtSheep.prototype.constructor = HawtSheep;
+
+    HawtSheep.prototype.draw = function (ctx, clockTick) {
+        // Reset the animations if they're not running. 
+        if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
+
+        // Play the correct animation
+        if (this.isMovingLeft || this.isMovingRight) {
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        } else {
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        }
+    }
+
+    var HawtChicken = function(playerObj) {
+        if (isClient) {
+            this.standingAnimation = new Animation(('../img/animals/chicken/stand'), 4, 120, true);
+            this.walkingAnimation = new Animation(('../img/animals/chicken/move'), 3, 150, true);
+        }
+        playerObj.character = EntityCollection.GameCharacters['HawtChicken'];
+        HawtPlayer.call(this, playerObj);
+    }
+
+    HawtChicken.prototype = new HawtPlayer({width: 73, height: 77, character: EntityCollection.GameCharacters['HawtChicken']});
+
+    HawtChicken.prototype.constructor = HawtChicken;
+
+    HawtChicken.prototype.draw = function (ctx, clockTick) {
+        // Reset the animations if they're not running. 
+        if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
+
+        // Play the correct animation
+        if (this.isMovingLeft || this.isMovingRight) {
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        } else {
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        }
+    }
+
+    var HawtPig = function(playerObj) {
+        if (isClient) {
+            this.standingAnimation = new Animation(('../img/animals/pig/stand'), 3, 150, true);
+            this.walkingAnimation = new Animation(('../img/animals/pig/move'), 2, 100, true);
+        }
+        playerObj.character = EntityCollection.GameCharacters['HawtPig'];
+        HawtPlayer.call(this, playerObj);
+    }
+
+    HawtPig.prototype = new HawtPlayer({width: 67, height: 61, character: EntityCollection.GameCharacters['HawtPig']});
+
+    HawtPig.prototype.constructor = HawtPig;
+
+    HawtPig.prototype.draw = function (ctx, clockTick) {
+        // Reset the animations if they're not running. 
+        if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
+
+        // Play the correct animation
+        if (this.isMovingLeft || this.isMovingRight) {
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        } else {
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+        }
+    }
+
+
 
     var Potato = function(potatoData) {
         if (isClient) {
@@ -318,6 +407,9 @@
     EntityCollection.Potato = Potato;
     EntityCollection.HawtDogge = HawtDogge;
     EntityCollection.MovingPlatform = MovingPlatform;
+    EntityCollection.HawtSheep = HawtSheep;
+    EntityCollection.HawtChicken = HawtChicken;
+    EntityCollection.HawtPig = HawtPig;
 
     // Set the entity collection for our clients/server.
     exports.EntityCollection = EntityCollection;
