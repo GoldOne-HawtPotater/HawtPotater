@@ -67,19 +67,24 @@ function Animation(spriteSheetName, frames, frameDuration, loop, reverse) {
 }
 
 Animation.prototype.drawFrame = function (tick, ctx, x, y, flipH, flipV) {
-    var scaleH = flipH ? flipH : 1, // Set horizontal scale to -1 if flip horizontal
-        scaleV = flipV ? flipV : 1; // Set verical scale to -1 if flip vertical
     this.elapsedTime += tick;
-    if (this.loop) {
-        if (this.isDone()) {
+
+    var index;
+    if (this.isDone()) {
+        if (this.loop) {
             this.reset();
+            index = this.reverse ? this.frames - this.currentFrame() - 1 : this.currentFrame();
+        } else {
+            index = this.reverse ? 0 : this.frames - 1;
         }
-    } else if (this.isDone()) {
-        return;
+    } else {
+        index = this.reverse ? this.frames - this.currentFrame() - 1 : this.currentFrame();
     }
 
-    var index = this.reverse ? this.frames - this.currentFrame() - 1 : this.currentFrame();
     var image = ASSET_MANAGER.getAsset(this.spriteSheetName + '_' + index + '.png');
+
+    var scaleH = flipH ? flipH : 1, // Set horizontal scale to -1 if flip horizontal
+        scaleV = flipV ? flipV : 1; // Set verical scale to -1 if flip vertical
 
     if (scaleH < 0) x += image.width;
     if (scaleV < 0) y += image.height;
@@ -91,15 +96,21 @@ Animation.prototype.drawFrame = function (tick, ctx, x, y, flipH, flipV) {
     ctx.restore();
 }
 
-Animation.prototype.drawImage = function (ctx, x, y, flipH, flipV) {
+Animation.prototype.drawImage = function(ctx, x, y, flipH, flipV, index) {
     var scaleH = flipH ? flipH : 1, // Set horizontal scale to -1 if flip horizontal
         scaleV = flipV ? flipV : 1; // Set verical scale to -1 if flip vertical
+    
+    var index = typeof index !== "undefined" ? '_' + index : "";
+
+    var image = ASSET_MANAGER.getAsset(this.spriteSheetName + index + '.png');
 
     if (scaleH < 0) x += image.width;
     if (scaleV < 0) y += image.height;
-    
+
+    ctx.save();
     ctx.scale(scaleH, scaleV);
-    ctx.drawImage(ASSET_MANAGER.getAsset(this.spriteSheetName + '.png'), x, y);
+    ctx.drawImage(image, x * scaleH, y * scaleV);
+    ctx.restore();
 }
 
 Animation.prototype.currentFrame = function () {

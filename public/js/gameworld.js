@@ -18,7 +18,7 @@ $(function(){
 
     /** Gameworld Class **/
 
-    var GameWorld = function () {
+    var GameWorld = function() {
         this.gameEngine = new GameEngine();
         // this.surfaceWidth = 1280;
         // this.surfaceHeight = 720;
@@ -32,7 +32,7 @@ $(function(){
     }
     window.GameWorld = GameWorld;
 
-    GameWorld.prototype.init = function (ctx) {
+    GameWorld.prototype.init = function(ctx) {
         this.ctx = ctx;
         this.camera = new Camera(ctx);
 
@@ -56,7 +56,7 @@ $(function(){
         }
     }
 
-    GameWorld.prototype.start = function () {
+    GameWorld.prototype.start = function() {
         var that = this;
         if (that.roomMasterWorld) {
             var readyCheck = setInterval(function () {
@@ -124,6 +124,8 @@ $(function(){
             this.gameEngine.b2dWorld.ClearForces();    
         }
 
+        this.gameEngine.background.draw(this.ctx);
+
         if (this.gameEngine.myGameState != this.gameEngine.gameStates.waiting) {
             /** Draw map **/
             this.gameMaps[this.mapNum-1].drawMap(that.ctx);
@@ -156,6 +158,17 @@ $(function(){
             // that.camxpos.max = that.camxpos.max > entity.x - offset ? that.camxpos.max : entity.x - offset;
             // that.camypos.min = that.camypos.min < entity.y + offset? that.camypos.min : entity.y + offset;
             // that.camypos.max = that.camypos.max > entity.y - offset? that.camypos.max : entity.y - offset;
+
+            // Draw arrow for the potato
+            //if (that.gameEngine.potatoCreationQueue.length > 0) {
+                var potato = that.gameEngine.currentPotato;
+                var arrowImage = ASSET_MANAGER.getAsset("../img/arrow.png");
+                var position = that.camera.screenToWorld(0, 0);
+
+                if (potato.y < position.y) {                                                       // scale by 0.75
+                    that.ctx.drawImage(arrowImage, potato.x + potato.width / 2 - arrowImage.width * .75 / 2, position.y, arrowImage.width * .75, arrowImage.height * .75);
+                }
+            //}
         });
 
         /** Draw Players **/
