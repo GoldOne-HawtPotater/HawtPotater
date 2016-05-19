@@ -611,7 +611,7 @@
                 // fixture definition and shape definition for fixture
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
         fixDef.density = 0.01;
-        fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(55 / 2 / this.SCALE);
+        fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(65 / 2 / this.SCALE);
         // fixDef.shape.SetAsBox(
         //     30 / 2 / this.SCALE,
         //     27 / 2 / this.SCALE
