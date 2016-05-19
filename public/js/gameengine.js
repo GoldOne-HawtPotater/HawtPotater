@@ -407,6 +407,7 @@
                     that.players.get(firstObjectCollided.id).processCollision({ objectCollided: secondObjectCollided });
                 }
 
+                if (firstObjectCollided && that.entities.get(firstObjectCollided.id)) {
                     if (firstObjectCollided != null && firstObjectCollided.type == "POWER_UP") {
                         that.entities.get(firstObjectCollided.id).processCollision({objectCollided: secondObjectCollided, gameEngine: that});
                     }
@@ -423,6 +424,7 @@
                     that.players.get(secondObjectCollided.id).processCollision({ objectCollided: firstObjectCollided });
                 }
 
+                if (secondObjectCollided && that.entities.get(secondObjectCollided.id)) {
                     if (secondObjectCollided != null && secondObjectCollided.type == "POWER_UP") {
                         that.entities.get(secondObjectCollided.id).processCollision({objectCollided: firstObjectCollided, gameEngine: that });
                     }
