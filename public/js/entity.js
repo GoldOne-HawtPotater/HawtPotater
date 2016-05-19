@@ -20,11 +20,13 @@
         this.removeFromWorld = entity.removeFromWorld;
     }
 
-    Entity.prototype.update = function () {}
+    Entity.prototype.update = function() {
+    }
 
-    Entity.prototype.draw = function (ctx) {}
+    Entity.prototype.draw = function() {
+    }
 
-    Entity.prototype.rotateAndCache = function (image, angle) {
+    Entity.prototype.rotateAndCache = function(image, angle) {
         var offscreenCanvas = document.createElement('canvas');
         var size = Math.max(image.width, image.height);
         offscreenCanvas.width = size;
@@ -40,10 +42,10 @@
         //offscreenCtx.strokeRect(0,0,size,size);
         return offscreenCanvas;
     }
-
-    /** Background Test **/
+    
+    /** Background **/
     function Background() {
-        Entity.call(this, 0, 0);
+        Entity.call(this, -800, -700);
     }
 
     Background.prototype = new Entity();
@@ -52,10 +54,8 @@
     Background.prototype.update = function () {
     }
 
-    Background.prototype.draw = function (ctx) {
-        ctx.fillStyle = "SaddleBrown";
-        ctx.fillRect(0,300,800,300);
-        Entity.prototype.draw.call(this);
+    Background.prototype.draw = function(ctx) {
+        ctx.drawImage(ASSET_MANAGER.getAsset("../img/background_3.jpg"), -800, -700/*-1100*/);
     }
 
     // Moving platforms
@@ -107,7 +107,7 @@
     }
 
     /** Power Up Class **/
-    var PowerUp = function (x, y) {
+    var PowerUp = function(x, y) {
         this.rotation = 0;
         Entity.call(this, x, y, Date.now());
     }
@@ -119,12 +119,12 @@
         Entity.prototype.update.call(this);
     }
 
-    PowerUp.prototype.draw = function (ctx, clockTick) {
+    PowerUp.prototype.draw = function(ctx, clockTick) {
         // ctx, x, y, flipH, flipV
         this.sprite.drawImage(ctx, this.x, this.y);
     }
 
-    PowerUp.prototype.processCollision = function (data) {
+    PowerUp.prototype.processCollision = function(data) {
         // Power Up has collided with a Player
         // Add this Power Up to the graveyard for deletion and grant the Player the Power
         if (data.objectCollided.type == "PLAYER") {
@@ -144,7 +144,7 @@
 
 
     /** Multi-Jump Power Up Class **/
-    var MultiJumpPowerUp = function (powerUpData) {
+    var MultiJumpPowerUp = function(powerUpData) {
         if (isClient) {
             this.sprite = new Animation(('../img/powerups/jump'), 1);
         }
@@ -156,11 +156,11 @@
     MultiJumpPowerUp.prototype = new PowerUp();
     MultiJumpPowerUp.prototype.constructor = MultiJumpPowerUp;
 
-    MultiJumpPowerUp.prototype.update = function () {
+    MultiJumpPowerUp.prototype.update = function() {
         Entity.prototype.update.call(this);
     }
 
-    MultiJumpPowerUp.prototype.draw = function (ctx, clockTick) {
+    MultiJumpPowerUp.prototype.draw = function(ctx, clockTick) {
         // ctx, x, y, flipH, flipV
         this.sprite.drawImage(ctx, this.x, this.y);
     }
@@ -170,7 +170,7 @@
         PowerUp.prototype.givePower.call(this);
     }
 
-    MultiJumpPowerUp.prototype.syncEntity = function (entity) {
+    MultiJumpPowerUp.prototype.syncEntity = function(entity) {
         Entity.prototype.syncEntity.call(entity);
         this.rotation = entity.rotation;
     }
@@ -187,10 +187,10 @@
     Platform.prototype = new Entity();
     Platform.prototype.constructor = Background;
 
-    Platform.prototype.update = function () {
+    Platform.prototype.update = function() {
     }
 
-    Platform.prototype.draw = function (ctx) {
+    Platform.prototype.draw = function(ctx) {
     }
 
     /** Hawt Potater Player Class **/
@@ -202,7 +202,7 @@
         this.isMovingRight = false;
         this.direction = (playerObj && playerObj.direction) ? playerObj.direction : 1;
         this.score = 0;
-        this.multiJumpCounter = 0;
+        this.multiJumpCounter = playerObj.multiJumpCounter ? playerObj.multiJumpCounter : 0;
         this.attackSteps = 0;
         // this.moveSpeed = 200;
         this.width = playerObj.width;
@@ -247,18 +247,21 @@
         if (isClient) {
             this.standingAnimation = new Animation(('../img/animals/dog/stand'), 15, 120, true);
             this.walkingAnimation = new Animation(('../img/animals/dog/move'), 6, 120, true);
+            this.jumpingAnimation = new Animation(('../img/animals/dog/jump'), 4, 50, false);
         }
         // playerObj.width = 83;
         // playerObj.height = 52;
+
+        this.body = playerObj.body;
+
         playerObj.character = EntityCollection.GameCharacters['HawtDogge'];
         HawtPlayer.call(this, playerObj);
     }
 
     HawtDogge.prototype = new HawtPlayer({width: 83, height: 52, character: EntityCollection.GameCharacters['HawtDogge']});
-
     HawtDogge.prototype.constructor = HawtDogge;
-
-    HawtDogge.prototype.draw = function (ctx, clockTick) {
+    
+    HawtDogge.prototype.draw = function(ctx, clockTick) {
         // Reset the animations if they're not running. 
         if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
 
@@ -267,7 +270,9 @@
         // var direction = 1;
         // if (this.isMovingLeft) direction = -1;
         // if (this.isMovingRight) direction = 1;
-        if (this.isMovingLeft || this.isMovingRight) {
+        if (this.isJumping) {
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+        } else if (this.isMovingLeft || this.isMovingRight) {
             this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
         } else {
             this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
@@ -279,6 +284,7 @@
         if (isClient) {
             this.standingAnimation = new Animation(('../img/animals/sheep/stand'), 4, 180, true);
             this.walkingAnimation = new Animation(('../img/animals/sheep/move'), 3, 180, true);
+            this.jumpingAnimation = new Animation(('../img/animals/sheep/jump'), 3, 80, false);
         }
         // playerObj.width = 91;
         // playerObj.height = 60;
@@ -295,7 +301,9 @@
         if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
 
         // Play the correct animation
-        if (this.isMovingLeft || this.isMovingRight) {
+        if (this.isJumping) {
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+        } else if (this.isMovingLeft || this.isMovingRight) {
             this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
         } else {
             this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
@@ -304,8 +312,9 @@
 
     var HawtChicken = function(playerObj) {
         if (isClient) {
-            this.standingAnimation = new Animation(('../img/animals/chicken/stand'), 4, 120, true);
+            this.standingAnimation = new Animation(('../img/animals/chicken/stand'), 4, 150, true);
             this.walkingAnimation = new Animation(('../img/animals/chicken/move'), 3, 150, true);
+            this.jumpingAnimation = new Animation(('../img/animals/chicken/jump'), 3, 80, false);
         }
         playerObj.character = EntityCollection.GameCharacters['HawtChicken'];
         HawtPlayer.call(this, playerObj);
@@ -320,7 +329,9 @@
         if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
 
         // Play the correct animation
-        if (this.isMovingLeft || this.isMovingRight) {
+        if (this.isJumping) {
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+        } else if (this.isMovingLeft || this.isMovingRight) {
             this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
         } else {
             this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
@@ -331,6 +342,7 @@
         if (isClient) {
             this.standingAnimation = new Animation(('../img/animals/pig/stand'), 3, 150, true);
             this.walkingAnimation = new Animation(('../img/animals/pig/move'), 2, 100, true);
+            this.jumpingAnimation = new Animation(('../img/animals/pig/jump'), 3, 80, false);
         }
         playerObj.character = EntityCollection.GameCharacters['HawtPig'];
         HawtPlayer.call(this, playerObj);
@@ -345,7 +357,9 @@
         if (!this.isMovingLeft && !this.isMovingRight) this.walkingAnimation.reset();
 
         // Play the correct animation
-        if (this.isMovingLeft || this.isMovingRight) {
+        if (this.isJumping) {
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+        } else if (this.isMovingLeft || this.isMovingRight) {
             this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
         } else {
             this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
@@ -356,10 +370,10 @@
 
     var Potato = function(potatoData) {
         if (isClient) {
-            this.sprite = new Animation(('../img/potato'), 1);
+            this.sprite = new Animation(('../img/new_potato'), 1);
         }
-        this.width = 30;
-        this.height = 27;
+        this.width = 60;
+        this.height = 50;
         this.rotation = 0;
         this.velocity = null;
         Entity.call(this, potatoData.x, potatoData.y, potatoData.id);
@@ -383,7 +397,7 @@
         this.velocity = entity.velocity;
     }
 
-    Potato.prototype.processCollision = function (data) {
+    Potato.prototype.processCollision = function(data) {
         if (data.objectCollided.type == "PLAYER") {
             data.gameEngine.players.get(data.objectCollided.id).score += 1;
         } else if (data.objectCollided.type == "PLATFORM" && this.y >= 100) {

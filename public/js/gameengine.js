@@ -26,6 +26,9 @@
      /*************** GameEngine Class **************/
     /////////////////////////////////////////////////
     var GameEngine = function () {
+        this.background = new Background();
+
+        this.currentPotato = null;
         this.players = new Map();
         this.playersB2d = new Map();
         this.entities = new Map();
@@ -153,6 +156,10 @@
             entity.x = body.GetPosition().x * that.SCALE - entity.width / 2;
             entity.y = body.GetPosition().y * that.SCALE - entity.height / 2;
             entity.position = body.GetPosition();
+
+            if (body.type = "POTATO" && entity) {
+                that.currentPotato = entity;
+            }
         });
 
         /** Player Updates **/
@@ -169,7 +176,15 @@
             if (player.isMovingRight) {
                 if (Math.abs(desiredVel) < 5) desiredVel += 1;
                 player.direction = 1;
-            } 
+            }
+
+            // jump
+            if (vel.y !== 0) {
+                player.isJumping = true;
+            } else {
+                player.isJumping = false;
+                player.jumpingAnimation.reset();
+            }
             
             var velChange = desiredVel - vel.x;
             var impulse = body.GetMass() * velChange
@@ -349,7 +364,7 @@
         world.SetContactListener(listener);
     }
 
-    GameEngine.prototype.addPlayer = function (data) {
+    GameEngine.prototype.addPlayer = function(data) {
         // Specify a player body definition
         var bodyDef = new Box2D.Dynamics.b2BodyDef;
         bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
@@ -513,7 +528,7 @@
                 // fixture definition and shape definition for fixture
         var fixDef = new Box2D.Dynamics.b2FixtureDef;
         fixDef.density = 0.01;
-        fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(30 / 2 / this.SCALE);
+        fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(55 / 2 / this.SCALE);
         // fixDef.shape.SetAsBox(
         //     30 / 2 / this.SCALE,
         //     27 / 2 / this.SCALE
@@ -550,7 +565,7 @@
       /////////////////////////////////////////////////
      /**************** Modifier Code ****************/
     /////////////////////////////////////////////////
-    GameEngine.prototype.attack = function (data) {
+    GameEngine.prototype.attack = function(data) {
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
@@ -560,15 +575,19 @@
         }
     };
 
-    GameEngine.prototype.jumpPlayer = function (data) {
+    GameEngine.prototype.jumpPlayer = function(data) {
         // console.log(data.playerId + ' is attempting a jump.');
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
+
+            player.isJumping = playerBody.GetLinearVelocity().y === 0;
+
             // If we can double jump and our current y velocity is not 0 we are attempting a double jump
             if (player.multiJumpCounter > 0 && playerBody.GetLinearVelocity().y != 0) {
                 console.log("Detected double jump");
                 player.multiJumpCounter--;
+                player.jumpingAnimation.reset();
             }
 
             //** Jump using impulse and velocity
@@ -585,9 +604,10 @@
         }
     };
 
-    GameEngine.prototype.dodge = function (data) {};
+    GameEngine.prototype.dodge = function(data) {
+    };
 
-    GameEngine.prototype.movePlayer = function (data) {
+    GameEngine.prototype.movePlayer = function(data) {
         // console.log(data.playerId + ' is moving ' + data.direction + '.');
         if (data && data.direction) {
             var player = this.players.get(data.playerId);

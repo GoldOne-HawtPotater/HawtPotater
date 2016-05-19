@@ -74,8 +74,8 @@ $(function(){
                     var player = gameworld.gameEngine.playersB2d.get(myPlayerId);
                     var playerEnt = gameworld.gameEngine.players.get(myPlayerId);
                     if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
-                        socket.emit('server_update', data)
-                        // gameworld.gameEngine.jumpPlayer(data);
+                        socket.emit('server_update', data);
+                        //gameworld.gameEngine.jumpPlayer(data);
                     }
                     break;
                 case 37: //left
@@ -86,7 +86,7 @@ $(function(){
                         value: true
                     };
                     if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
-                        socket.emit('server_update', data)
+                        socket.emit('server_update', data);
                         // gameworld.gameEngine.movePlayer(data);
                     }
                     break;
@@ -155,11 +155,13 @@ $(function(){
 
     // on connection to server get the roomId of person's room
     socket.on('connect', function(){
-        var queueDownloads = function() {
-            ASSET_MANAGER.queueDownload("../img/potato.png");
+        var queueDownloads = function () {
+            ASSET_MANAGER.queueDownload("../img/background_3.jpg");
+            ASSET_MANAGER.queueDownload("../img/new_potato.png");
+            ASSET_MANAGER.queueDownload("../img/arrow.png");
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
-            //... Add more asssets below.
+
             // Dog
             var numberOfFrames = 15;
             for (var i = 0; i < numberOfFrames; i++) {
@@ -169,6 +171,13 @@ $(function(){
             for (var i = 0; i < numberOfFrames; i++) {
                 ASSET_MANAGER.queueDownload('../img/animals/dog/move_' + i + '.png');
             }
+            numberOfFrames = 4;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/dog/jump_' + i + '.png');
+            }
+
+            //ASSET_MANAGER.queueDownload('../img/animals/dog/jump_0.png');
+
             // Sheep
             numberOfFrames = 3;
             for (var i = 0; i < numberOfFrames; i++) {
@@ -178,6 +187,12 @@ $(function(){
             for (var i = 0; i < numberOfFrames; i++) {
                 ASSET_MANAGER.queueDownload('../img/animals/sheep/stand_' + i + '.png');
             }
+            numberOfFrames = 3;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/sheep/jump_' + i + '.png');
+            }
+
+            //ASSET_MANAGER.queueDownload('../img/animals/sheep/jump_0.png');
 
             // Pig
             numberOfFrames = 2;
@@ -188,6 +203,11 @@ $(function(){
             for (var i = 0; i < numberOfFrames; i++) {
                 ASSET_MANAGER.queueDownload('../img/animals/pig/stand_' + i + '.png');
             }
+            numberOfFrames = 3;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/pig/jump_' + i + '.png');
+            }
+            //ASSET_MANAGER.queueDownload('../img/animals/pig/jump_0.png');
 
             // Chicken
             numberOfFrames = 3;
@@ -198,6 +218,11 @@ $(function(){
             for (var i = 0; i < numberOfFrames; i++) {
                 ASSET_MANAGER.queueDownload('../img/animals/chicken/stand_' + i + '.png');
             }
+            numberOfFrames = 3;
+            for (var i = 0; i < numberOfFrames; i++) {
+                ASSET_MANAGER.queueDownload('../img/animals/chicken/jump_' + i + '.png');
+            }
+            //ASSET_MANAGER.queueDownload('../img/animals/chicken/jump_0.png');
         };
 
         /** Download the assets **/
