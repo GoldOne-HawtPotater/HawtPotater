@@ -59,12 +59,12 @@ $(function(){
                         socket.emit('server_update', data);
                     }
                     break;
-                case 50: // {2} key, testing code to spawn powerUp
-                    data = {
-                        theFunc: 'addPowerUps'
-                    };
-                    socket.emit('server_update', data);
-                    break;
+                //case 50: // {2} key, testing code to spawn powerUp
+                //    data = {
+                //        theFunc: 'addPowerUps'
+                //    };
+                //    socket.emit('server_update', data);
+                //    break;
                 case 32: // spacebar (jump)
                     data = {
                         theFunc: 'jumpPlayer',

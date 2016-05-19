@@ -68,7 +68,7 @@ $(function(){
                     console.log('Map number chosen = ' + that.mapNum);
 
                     var setStartTime = Date.now() + 5000;
-                    var setEndTime = Date.now() + 15000;
+                    var setEndTime = Date.now() + 35000;
                     that.startTime = setStartTime;
                     //var setEndTime = Date.now() + 300000;
 

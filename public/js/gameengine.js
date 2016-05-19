@@ -30,6 +30,8 @@
         this.platformsB2d = [];
         this.graveyard = [];
         this.potatoCreationQueue = [];
+        this.powerUpNextDrop = null;
+        this.powerUpDelay = 10000;
         this.endGameTime = null;
         this.movingPlatforms = [];
         this.movingPlatformsB2d = [];
@@ -76,6 +78,7 @@
         this.createPlatforms({map: 'map0' + data.mapNum});
 
         this.endGameTime = data.endTime;
+        this.powerUpNextDrop = data.time + this.powerUpDelay;
         // Wait until the current time is greater than the time given by the server.
         // This is basically a pause momet so we can drop the potato at the exact time
         // for everyone. 
@@ -149,6 +152,12 @@
             }
         }
 
+        /** Power Up Addition Check **/
+        if (this.powerUpNextDrop != null && Date.now() > this.powerUpNextDrop) {
+            this.addPowerUps({});
+            this.powerUpNextDrop = Date.now() + this.powerUpDelay;
+        }
+
         /** Random Entities Update **/
         this.entities.forEach(function(entity) {
             var body = that.entitiesB2d.get(entity.id);
@@ -205,6 +214,7 @@
         if (this.endGameTime != null && this.endGameTime < Date.now()) {
             this.myGameState = this.gameStates.waiting;
             this.endGameTime = null;
+            this.powerUpNextDrop = null;
             var entityIds = this.entities.keys();
             var nextEntity = entityIds.next();
             while (!nextEntity.done) {
@@ -509,7 +519,7 @@
         fixDef.filter.maskBits = this.collisionProfiles.player | this.collisionProfiles.platform | this.collisionProfiles.powerup;
 
 
-        bodyDef.position.x = (Math.random() * 1280) / this.SCALE;
+        bodyDef.position.x = (Math.floor(Math.random() * (650 - 450 + 1) + 450)) / this.SCALE;
         bodyDef.position.y = 50 / this.SCALE;
 
         var body = this.b2dWorld.CreateBody(bodyDef);
@@ -521,8 +531,8 @@
         //data.y = body.GetPosition().y * this.SCALE;
 
         var powerUp = new MultiJumpPowerUp({
-            x: 450,
-            y: 50
+            x: bodyDef.position.x,
+            y: bodyDef.position.y
         });
 
         // Set the data to be stored by the object for collisions
