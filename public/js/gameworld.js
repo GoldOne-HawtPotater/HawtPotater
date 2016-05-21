@@ -201,7 +201,7 @@ $(function(){
             }
 
             // Draw dodge cooldown timer
-            if (!player.canDodge) {
+            if (player.dodgeCooldownTimer != null && !player.canDodge) {
                 that.ctx.font = "12px Comic Sans MS";
                 that.ctx.fillStyle = "#000000";
                 var timeRemaining = Math.ceil((player.dodgeCooldownTimer - Date.now()) / 1000);
