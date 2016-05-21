@@ -181,20 +181,33 @@ $(function(){
             } else {
                 that.ctx.fillStyle = "#ff0000";
             }
+            that.ctx.font = "20px Comic Sans MS";
 
             // Draw player scoring information
             var position = that.camera.screenToWorld(1100, 50 * (player.playerNum + 1));
+            that.ctx.strokeStyle = 'black';
             that.ctx.fillText("Player " + player.playerNum + ": " + player.score, position.x, position.y);
+            that.ctx.strokeText("Player " + player.playerNum + ": " + player.score, position.x, position.y);
 
             // Draw player name
             that.ctx.fillText("Player " + player.playerNum, player.x, player.y - 50);
+            that.ctx.strokeText("Player " + player.playerNum, player.x, player.y - 50);
 
             // Draw Multi Jump Power Up Status
             if (player.multiJumpCounter > 0) {
                 that.ctx.font = "12px Comic Sans MS";
                 that.ctx.fillStyle = "#0000ff";
-                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 25);
+                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 32);
             }
+
+            // Draw dodge cooldown timer
+            if (player.dodgeCooldownTimer != null && !player.canDodge) {
+                that.ctx.font = "12px Comic Sans MS";
+                that.ctx.fillStyle = "#000000";
+                var timeRemaining = Math.ceil((player.dodgeCooldownTimer - Date.now()) / 1000);
+                that.ctx.fillText("Dodge Reset: " + timeRemaining, player.x, player.y - 20);
+            }
+
             that.camxpos.min = that.camxpos.min < player.x ? that.camxpos.min : player.x;
             that.camxpos.max = that.camxpos.max > player.x ? that.camxpos.max : player.x;
             that.camypos.min = that.camypos.min < player.y ? that.camypos.min : player.y;

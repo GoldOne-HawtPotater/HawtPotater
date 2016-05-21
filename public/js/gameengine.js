@@ -213,7 +213,7 @@
                 body.GetWorldCenter()
             );
 
-            // Reset the players ability to dodge if we're past the dodgeTimer
+            // Reset the players dodge collision if the dodge duration is up
             if (player.dodgeResetTimer != null && Date.now() > player.dodgeResetTimer) {
                 var playerBody = that.playersB2d.get(player.playerId);
                 var fixtureList = playerBody.GetFixtureList();
@@ -225,6 +225,12 @@
 
                 // We reset the dodgeTimer to null
                 player.dodgeResetTimer = null;
+            }
+
+            // Reset the players ability to dodge if the cooldown is over
+            if (player.dodgeCooldownTimer != null && Date.now() > player.dodgeCooldownTimer) {
+                player.canDodge = true;
+                player.dodgeCooldownTimer = null;
             }
 
             // Update player x y values based on box2d position
@@ -671,17 +677,19 @@
     };
 
     GameEngine.prototype.dodge = function (data) {
-        console.log("entered dodge");
         if (data) {
             var player = this.players.get(data.playerId);
-            var playerBody = this.playersB2d.get(data.playerId);
-            var fixtureList = playerBody.GetFixtureList();
-            var filter = fixtureList.GetFilterData();
-            filter.maskBits = this.collisionProfiles.platform | this.collisionProfiles.potato | this.collisionProfiles.powerup;
-            fixtureList.SetFilterData(filter);
+            if (player.canDodge) {
+                var playerBody = this.playersB2d.get(data.playerId);
+                var fixtureList = playerBody.GetFixtureList();
+                var filter = fixtureList.GetFilterData();
+                filter.maskBits = this.collisionProfiles.platform | this.collisionProfiles.potato | this.collisionProfiles.powerup;
+                fixtureList.SetFilterData(filter);
 
-            player.dodgeResetTimer = Date.now() + player.dodgeDuration;
-            //console.log("Fixture list: " + fixtureList[0]);
+                player.dodgeResetTimer = Date.now() + player.dodgeDuration;
+                player.dodgeCooldownTimer = Date.now() + player.dodgeCooldown;
+                player.canDodge = false;
+            }
         }
     };
 
@@ -692,22 +700,29 @@
             var playerBody = this.playersB2d.get(data.playerId);
 
             player.isJumping = playerBody.GetLinearVelocity().y === 0;
+            var isMultiJumping = (player.multiJumpCounter > 0 && playerBody.GetLinearVelocity().y != 0);
 
             // If we can double jump and our current y velocity is not 0 we are attempting a double jump
-            if (player.multiJumpCounter > 0 && playerBody.GetLinearVelocity().y != 0) {
-                console.log("Detected double jump");
-                player.multiJumpCounter--;
-                player.jumpingAnimation.reset();
+            //if (player.multiJumpCounter > 0 && playerBody.GetLinearVelocity().y != 0) {
+            //    console.log("Detected double jump");
+            //    player.multiJumpCounter--;
+            //    player.jumpingAnimation.reset();
+            //}
+
+            if (playerBody.GetLinearVelocity().y == 0 || isMultiJumping) {
+                // Jump using impulse and velocity
+                var impulse = playerBody.GetMass() * 5 * -1;
+                playerBody.ApplyImpulse(
+                    new Box2D.Common.Math.b2Vec2(0, impulse),
+                    playerBody.GetWorldCenter()
+                );
+
+                if (isMultiJumping) {
+                    player.multiJumpCounter--;
+                    player.jumpingAnimation.reset();
+                }
             }
-
-            //** Jump using impulse and velocity
-            var impulse = playerBody.GetMass() * 5 * -1;
-            playerBody.ApplyImpulse(
-                new Box2D.Common.Math.b2Vec2(0, impulse),
-                playerBody.GetWorldCenter()
-            );
-
-            //** Jump using velocity
+            // Jump using velocity
             // var velocity = playerBody.GetLinearVelocity();
             // velocity.y = -10;
             // playerBody.SetLinearVelocity(velocity);
