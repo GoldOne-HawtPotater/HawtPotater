@@ -188,7 +188,7 @@ body {
 	margin-bottom: 35px;
 }
 
-#create, #join {
+#create {
 	width: 300px;
 	height: 100px;
 	background-color: #70b1d1;
@@ -245,9 +245,13 @@ body {
 	font-weight: normal;
 	font-size: 13px;
 }
-#big {
+.big {
 	font-weight: bold;
 	font-size: 23px;
+}
+.small {
+	font-style: italic;
+	font-size: 12px;
 }
 
 /* ------------ Footer styles ------------ */

@@ -179,8 +179,17 @@
 
             if (body.type = "POTATO" && entity) {
                 that.currentPotato = entity;
+                var velocity = body.GetLinearVelocity();
+                // Cap the velocity at 5
+                if (velocity.x > 5) {
+                    velocity.x = 5;
+                }
+                if (velocity.y > 5) {
+                    velocity.y = 5;
+                }
             }
         });
+
 
         /** Player Updates **/
         this.players.forEach(function(player) {
