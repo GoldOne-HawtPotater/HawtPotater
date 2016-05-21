@@ -55,7 +55,7 @@
     }
 
     Background.prototype.draw = function(ctx) {
-        ctx.drawImage(ASSET_MANAGER.getAsset("../img/clouds.png"), -800, -400/*-1100*/);
+        ctx.drawImage(ASSET_MANAGER.getAsset("../img/clouds_highres.png"), -500, -400/*-1100*/);
     }
 
     // Moving platforms

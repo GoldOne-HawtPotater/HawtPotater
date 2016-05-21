@@ -181,13 +181,17 @@ $(function(){
             } else {
                 that.ctx.fillStyle = "#ff0000";
             }
+            that.ctx.font = "20px Comic Sans MS";
 
             // Draw player scoring information
             var position = that.camera.screenToWorld(1100, 50 * (player.playerNum + 1));
+            that.ctx.strokeStyle = 'black';
             that.ctx.fillText("Player " + player.playerNum + ": " + player.score, position.x, position.y);
+            that.ctx.strokeText("Player " + player.playerNum + ": " + player.score, position.x, position.y);
 
             // Draw player name
             that.ctx.fillText("Player " + player.playerNum, player.x, player.y - 50);
+            that.ctx.strokeText("Player " + player.playerNum, player.x, player.y - 50);
 
             // Draw Multi Jump Power Up Status
             if (player.multiJumpCounter > 0) {

@@ -692,22 +692,29 @@
             var playerBody = this.playersB2d.get(data.playerId);
 
             player.isJumping = playerBody.GetLinearVelocity().y === 0;
+            var isMultiJumping = (player.multiJumpCounter > 0 && playerBody.GetLinearVelocity().y != 0);
 
             // If we can double jump and our current y velocity is not 0 we are attempting a double jump
-            if (player.multiJumpCounter > 0 && playerBody.GetLinearVelocity().y != 0) {
-                console.log("Detected double jump");
-                player.multiJumpCounter--;
-                player.jumpingAnimation.reset();
+            //if (player.multiJumpCounter > 0 && playerBody.GetLinearVelocity().y != 0) {
+            //    console.log("Detected double jump");
+            //    player.multiJumpCounter--;
+            //    player.jumpingAnimation.reset();
+            //}
+
+            if (playerBody.GetLinearVelocity().y == 0 || isMultiJumping) {
+                // Jump using impulse and velocity
+                var impulse = playerBody.GetMass() * 5 * -1;
+                playerBody.ApplyImpulse(
+                    new Box2D.Common.Math.b2Vec2(0, impulse),
+                    playerBody.GetWorldCenter()
+                );
+
+                if (isMultiJumping) {
+                    player.multiJumpCounter--;
+                    player.jumpingAnimation.reset();
+                }
             }
-
-            //** Jump using impulse and velocity
-            var impulse = playerBody.GetMass() * 5 * -1;
-            playerBody.ApplyImpulse(
-                new Box2D.Common.Math.b2Vec2(0, impulse),
-                playerBody.GetWorldCenter()
-            );
-
-            //** Jump using velocity
+            // Jump using velocity
             // var velocity = playerBody.GetLinearVelocity();
             // velocity.y = -10;
             // playerBody.SetLinearVelocity(velocity);
