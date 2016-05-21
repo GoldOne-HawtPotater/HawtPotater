@@ -38,6 +38,7 @@
         this.potatoCreationQueue = [];
         this.powerUpNextDrop = null;
         this.powerUpDelay = 10000;
+        this.platformPositionData = null;
         this.endGameTime = null;
         this.movingPlatforms = [];
         this.movingPlatformsB2d = [];
@@ -99,7 +100,18 @@
                 setTimeout(pauseLoop, 1);
             } else {
                 that.myGameState = that.gameStates.playing;
-                that.potatoCreationQueue.push({ x: 325, y: 25, time: data.time, timeToDrop: Date.now() + 5000 });
+                if (that.platformPositionData){
+                    that.potatoCreationQueue.push({ 
+                            x: (that.platformPositionData.minX + that.platformPositionData.maxX)/2, 
+                            y: 25, 
+                            time: data.time, 
+                            timeToDrop: Date.now() + 5000 
+                        });
+                } else {
+                    console.log("Error creating game room.");
+                    that.myGameState = that.gameStates.waiting;
+                    that.endGameTime = Date.now();
+                }
             }
         })();
         // while(Date.now() < data.time);
@@ -265,6 +277,7 @@
             this.players.forEach(function(player) {
                 player.isReady = false;
             }); 
+            that.platformPositionData = null;
             this.createPlatforms({});
             // clear the room  
         }
@@ -278,6 +291,8 @@
     /////////////////////////////////////////////////
     GameEngine.prototype.createPlatforms = function(data) {
         var that = this;
+        this.platformPositionData = {};
+
         this.platformsB2d.forEach(function (plat, index, array) {
             // that.b2dWorld.DestroyBody(plat);
             plat.GetWorld().DestroyBody(plat);
@@ -341,6 +356,10 @@
 					platformBody.SetUserData({
 						type: "PLATFORM"
 					});
+
+                    // Get min x and max x
+                    this.platformPositionData.minX = colObj.x;
+                    this.platformPositionData.maxX = colObj.width;
 				}
 
 				//platformBody.SetUserData({
@@ -598,7 +617,8 @@
         fixDef.filter.maskBits = this.collisionProfiles.player | this.collisionProfiles.platform | this.collisionProfiles.powerup;
 
 
-        bodyDef.position.x = (Math.floor(Math.random() * (650 - 450 + 1) + 450)) / this.SCALE;
+        // bodyDef.position.x = (Math.floor(Math.random() * (650 - 450 + 1) + 450)) / this.SCALE;
+        bodyDef.position.x = (this.platformPositionData.minX + (Math.floor(Math.random() * this.platformPositionData.maxX))) / this.SCALE;
         bodyDef.position.y = 50 / this.SCALE;
 
         var body = this.b2dWorld.CreateBody(bodyDef);
