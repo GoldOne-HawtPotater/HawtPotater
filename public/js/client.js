@@ -162,7 +162,8 @@ $(function(){
     // on connection to server get the roomId of person's room
     socket.on('connect', function(){
         var queueDownloads = function () {
-            ASSET_MANAGER.queueDownload("../img/background_3.jpg");
+            // ASSET_MANAGER.queueDownload("../img/background_3.jpg");
+            ASSET_MANAGER.queueDownload("../img/clouds.png");
             ASSET_MANAGER.queueDownload("../img/new_potato.png");
             ASSET_MANAGER.queueDownload("../img/arrow.png");
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
