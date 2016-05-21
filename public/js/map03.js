@@ -4,7 +4,7 @@
   TileMaps[name] = data;
  } else {
   onTileMapLoaded(name,data);
- }})("map",
+ }})("map03",
 { "height":20,
  "layers":[
         {
@@ -77,6 +77,17 @@
                  "width":140.666666666667,
                  "x":1239.33333333333,
                  "y":928
+                }, 
+                {
+                 "height":0,
+                 "id":9,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":1400,
+                 "x":4,
+                 "y":-1000
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -85,7 +96,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":9,
+ "nextobjectid":10,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":64,
