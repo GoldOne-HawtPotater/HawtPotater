@@ -197,8 +197,17 @@ $(function(){
             if (player.multiJumpCounter > 0) {
                 that.ctx.font = "12px Comic Sans MS";
                 that.ctx.fillStyle = "#0000ff";
-                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 25);
+                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 32);
             }
+
+            // Draw dodge cooldown timer
+            if (!player.canDodge) {
+                that.ctx.font = "12px Comic Sans MS";
+                that.ctx.fillStyle = "#000000";
+                var timeRemaining = Math.ceil((player.dodgeCooldownTimer - Date.now()) / 1000);
+                that.ctx.fillText("Dodge Reset: " + timeRemaining, player.x, player.y - 20);
+            }
+
             that.camxpos.min = that.camxpos.min < player.x ? that.camxpos.min : player.x;
             that.camxpos.max = that.camxpos.max > player.x ? that.camxpos.max : player.x;
             that.camypos.min = that.camypos.min < player.y ? that.camypos.min : player.y;

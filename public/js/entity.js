@@ -205,7 +205,10 @@
         this.multiJumpCounter = playerObj.multiJumpCounter ? playerObj.multiJumpCounter : 0;
         this.attackSteps = 0;
         this.dodgeDuration = 1000;
+        this.canDodge = true;
         this.dodgeResetTimer;
+        this.dodgeCooldownTimer;
+        this.dodgeCooldown = 3000;
         // this.moveSpeed = 200;
         this.width = playerObj.width;
         this.height = playerObj.height;

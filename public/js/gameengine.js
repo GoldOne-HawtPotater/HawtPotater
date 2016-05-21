@@ -213,7 +213,7 @@
                 body.GetWorldCenter()
             );
 
-            // Reset the players ability to dodge if we're past the dodgeTimer
+            // Reset the players dodge collision if the dodge duration is up
             if (player.dodgeResetTimer != null && Date.now() > player.dodgeResetTimer) {
                 var playerBody = that.playersB2d.get(player.playerId);
                 var fixtureList = playerBody.GetFixtureList();
@@ -225,6 +225,12 @@
 
                 // We reset the dodgeTimer to null
                 player.dodgeResetTimer = null;
+            }
+
+            // Reset the players ability to dodge if the cooldown is over
+            if (player.dodgeCooldownTimer != null && Date.now() > player.dodgeCooldownTimer) {
+                player.canDodge = true;
+                player.dodgeCooldownTimer = null;
             }
 
             // Update player x y values based on box2d position
@@ -671,17 +677,19 @@
     };
 
     GameEngine.prototype.dodge = function (data) {
-        console.log("entered dodge");
         if (data) {
             var player = this.players.get(data.playerId);
-            var playerBody = this.playersB2d.get(data.playerId);
-            var fixtureList = playerBody.GetFixtureList();
-            var filter = fixtureList.GetFilterData();
-            filter.maskBits = this.collisionProfiles.platform | this.collisionProfiles.potato | this.collisionProfiles.powerup;
-            fixtureList.SetFilterData(filter);
+            if (player.canDodge) {
+                var playerBody = this.playersB2d.get(data.playerId);
+                var fixtureList = playerBody.GetFixtureList();
+                var filter = fixtureList.GetFilterData();
+                filter.maskBits = this.collisionProfiles.platform | this.collisionProfiles.potato | this.collisionProfiles.powerup;
+                fixtureList.SetFilterData(filter);
 
-            player.dodgeResetTimer = Date.now() + player.dodgeDuration;
-            //console.log("Fixture list: " + fixtureList[0]);
+                player.dodgeResetTimer = Date.now() + player.dodgeDuration;
+                player.dodgeCooldownTimer = Date.now() + player.dodgeCooldown;
+                player.canDodge = false;
+            }
         }
     };
 
