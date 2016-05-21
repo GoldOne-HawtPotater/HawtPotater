@@ -22,96 +22,104 @@
 
 	</header>
 
-	<section id="sectionCanvas">
-		<canvas id="gameWorldCanvas" width="1280" height="720" style="border: 1px solid brown; background: white"></canvas>
-		<!-- <canvas id="gameWorldCanvas" width="2000" height="1000" style="border: 1px solid brown; background: white"></canvas> -->
-	</section>
-	<section id="sectionControls">
-		<!-- 	<div class="customKey">
-				<div class="customKeyContainer">
-					<div class="customKeyLabel">
-						R
-					</div>
-				</div>
-			</div> -->
-		<!-- Icons borrowed from https://www.iconexperience.com/o_collection/search/?q=keyboard -->
-		<div class="gameKeys">
-			<img src="../img/keyboard_keys/keyboard_key_r.png">
-			<div class="keyLabel">Ready</div>
-		</div>
-		<div class="gameKeys">
-			<img src="../img/keyboard_keys/keyboard_key_left.png">
-			<div class="keyLabel">Move Left</div>
-		</div>
-		<div class="gameKeys">
-			<img src="../img/keyboard_keys/keyboard_key_right.png">
-			<div class="keyLabel">Move Right</div>
-		</div>
-		<div class="gameKeys gameKeysExtended">
-			<img src="../img/keyboard_keys/keyboard_key_spacebar.png">
-			<div class="keyLabel">Jump</div>
-		</div>
-		<div class="gameKeys">
-			<img src="../img/keyboard_keys/keyboard_key_z.png">
-			<div class="keyLabel">Attack</div>
-		</div>
-		<div class="gameKeys">
-			<img src="../img/keyboard_keys/keyboard_key_x.png">
-			<div class="keyLabel">Dodge</div>
-		</div>
-	</section>
-	<section id="mobileControls">
-		<div id="mobileContainer">
-			<div class="mobileKeyContainer">
-				<div class="halfKey"></div>
-				<div class="gameKeys">
-					<img src="../img/keyboard_keys/keyboard_key_up.png">
-					<div class="keyLabel">Jump</div>
-				</div>
-				<div class="gameKeys"></div>
-				<div class="gameKeys">
-					<img src="../img/keyboard_keys/keyboard_key_z.png">
-					<div class="keyLabel">Attack</div>
-				</div>
-				<div class="gameKeys">
-					<img src="../img/keyboard_keys/keyboard_key_r.png">
-					<div class="keyLabel">Ready</div>
-				</div>
-			</div>
-			<div class="mobileKeyContainer">
-				<div class="gameKeys">
-					<img src="../img/keyboard_keys/keyboard_key_left.png">
-					<div class="keyLabel">Move Left</div>
-				</div>
-				<div class="gameKeys">
-					<img src="../img/keyboard_keys/keyboard_key_right.png">
-					<div class="keyLabel">Move Right</div>
-				</div>
-				<div class="gameKeys"></div>
-				<div class="gameKeys">
-					<img src="../img/keyboard_keys/keyboard_key_x.png">
-					<div class="keyLabel">Dodge</div>
-				</div>
-			</div>
-		</div>
-		
-	</section>
+    <header class="instruction">
+        <p>You just joined the room! If you don't see the game screen it's because you're not the room master.</p>
+        <p><strong>How to start:</strong> The game will start when everyone is ready (press R if you're ready).</p>
+        <p><strong>GAME GOAL:</strong> Gain the hightest score by touching the potato as many times as you can!</p>
+        <p><em>Power ups</em> give you the ability to do multi-jump!</p>
+    </header>
 
-	<script src="../js/jquery.min.js"></script>
-	<script src="../js/moment.min.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="../js/box2d.js"></script>
-	<!-- Map Data -->
-	<script src="../js/mapdata.js"></script>
-	<script src="../js/mapcreator.js"></script>
-	<!-- Always keep in order: animation, assetmgr, entity, gameworld, client -->
-	<script src="../js/animation.js"></script>
-	<script src="../js/assetmgr.js"></script>
-	<script src="../js/entity.js"></script>
-	<script src="../js/camera.js"></script>
-	<script src="../js/gameengine.js"></script>
-	<script src="../js/gameworld.js"></script>
-	<script src="../js/client.js"></script>
+        <section id="sectionCanvas">
+            <canvas id="gameWorldCanvas" width="1280" height="720" style="border: 1px solid brown; background: white"></canvas>
+            <!-- <canvas id="gameWorldCanvas" width="2000" height="1000" style="border: 1px solid brown; background: white"></canvas> -->
+        </section>
+
+        <section id="sectionControls">
+            <!-- 	<div class="customKey">
+                    <div class="customKeyContainer">
+                        <div class="customKeyLabel">
+                            R
+                        </div>
+                    </div>
+                </div> -->
+            <!-- Icons borrowed from https://www.iconexperience.com/o_collection/search/?q=keyboard -->
+            <div class="gameKeys">
+                <img src="../img/keyboard_keys/keyboard_key_r.png">
+                <div class="keyLabel">Ready</div>
+            </div>
+            <div class="gameKeys">
+                <img src="../img/keyboard_keys/keyboard_key_left.png">
+                <div class="keyLabel">Move Left</div>
+            </div>
+            <div class="gameKeys">
+                <img src="../img/keyboard_keys/keyboard_key_right.png">
+                <div class="keyLabel">Move Right</div>
+            </div>
+            <div class="gameKeys gameKeysExtended">
+                <img src="../img/keyboard_keys/keyboard_key_spacebar.png">
+                <div class="keyLabel">Jump</div>
+            </div>
+            <div class="gameKeys">
+                <img src="../img/keyboard_keys/keyboard_key_z.png">
+                <div class="keyLabel">Attack</div>
+            </div>
+            <div class="gameKeys">
+                <img src="../img/keyboard_keys/keyboard_key_x.png">
+                <div class="keyLabel">Dodge</div>
+            </div>
+        </section>
+        <section id="mobileControls">
+            <div id="mobileContainer">
+                <div class="mobileKeyContainer">
+                    <div class="halfKey"></div>
+                    <div class="gameKeys">
+                        <img src="../img/keyboard_keys/keyboard_key_up.png">
+                        <div class="keyLabel">Jump</div>
+                    </div>
+                    <div class="gameKeys"></div>
+                    <div class="gameKeys">
+                        <img src="../img/keyboard_keys/keyboard_key_z.png">
+                        <div class="keyLabel">Attack</div>
+                    </div>
+                    <div class="gameKeys">
+                        <img src="../img/keyboard_keys/keyboard_key_r.png">
+                        <div class="keyLabel">Ready</div>
+                    </div>
+                </div>
+                <div class="mobileKeyContainer">
+                    <div class="gameKeys">
+                        <img src="../img/keyboard_keys/keyboard_key_left.png">
+                        <div class="keyLabel">Move Left</div>
+                    </div>
+                    <div class="gameKeys">
+                        <img src="../img/keyboard_keys/keyboard_key_right.png">
+                        <div class="keyLabel">Move Right</div>
+                    </div>
+                    <div class="gameKeys"></div>
+                    <div class="gameKeys">
+                        <img src="../img/keyboard_keys/keyboard_key_x.png">
+                        <div class="keyLabel">Dodge</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <script src="../js/jquery.min.js"></script>
+        <script src="../js/moment.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="../js/box2d.js"></script>
+        <!-- Map Data -->
+        <script src="../js/mapdata.js"></script>
+        <script src="../js/mapcreator.js"></script>
+        <!-- Always keep in order: animation, assetmgr, entity, gameworld, client -->
+        <script src="../js/animation.js"></script>
+        <script src="../js/assetmgr.js"></script>
+        <script src="../js/entity.js"></script>
+        <script src="../js/camera.js"></script>
+        <script src="../js/gameengine.js"></script>
+        <script src="../js/gameworld.js"></script>
+        <script src="../js/client.js"></script>
 
 </body>
 
