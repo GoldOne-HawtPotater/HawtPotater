@@ -72,6 +72,8 @@ $(function(){
                     that.startTime = setStartTime;
                     //var setEndTime = Date.now() + 300000;
 
+                    that.mapNum = 3;
+
                     var data = {
                         theFunc: 'setGame',
                         mapNum: that.mapNum,
