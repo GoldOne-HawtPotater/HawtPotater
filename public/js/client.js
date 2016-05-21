@@ -60,11 +60,11 @@ $(function(){
                     }
                     break;
                 //case 50: // {2} key, testing code to spawn powerUp
-                //    data = {
-                //        theFunc: 'addPowerUps'
-                //    };
-                //    socket.emit('server_update', data);
-                //    break;
+                //   data = {
+                //       theFunc: 'addPowerUps'
+                //   };
+                //   socket.emit('server_update', data);
+                //   break;
                 case 32: // spacebar (jump)
                     data = {
                         theFunc: 'jumpPlayer',
@@ -162,7 +162,8 @@ $(function(){
     // on connection to server get the roomId of person's room
     socket.on('connect', function(){
         var queueDownloads = function () {
-            ASSET_MANAGER.queueDownload("../img/background_3.jpg");
+            // ASSET_MANAGER.queueDownload("../img/background_3.jpg");
+            ASSET_MANAGER.queueDownload("../img/clouds_highres.png");
             ASSET_MANAGER.queueDownload("../img/new_potato.png");
             ASSET_MANAGER.queueDownload("../img/arrow.png");
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
