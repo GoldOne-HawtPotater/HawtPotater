@@ -167,8 +167,8 @@ $(function(){
                 var topLeftPos = that.camera.screenToWorld(0, 0);
                 var topRightPos = that.camera.screenToWorld(that.ctx.canvas.width, 0);
                 var scale = 0.5;
-                if (entity.y < that.camera.screenToWorld(0, 0/*-potatoImage.height*/).y) {                                                   
-                    //scale = 1 - 1 * (topLeftPos.y - entity.y) / 1000;
+                if (entity.y < that.camera.screenToWorld(0, -potatoImage.height).y) {                                                   
+                    scale = scale - scale * (topLeftPos.y - entity.y) / 1000;
                     if (entity.x < that.camera.screenToWorld(-potatoImage.width, 0).x) {
                         that.ctx.drawImage(potatoImage, topLeftPos.x, topLeftPos.y, potatoImage.width * scale, potatoImage.height * scale);
                     } else if (entity.x > topRightPos.x) {
@@ -177,10 +177,10 @@ $(function(){
                         that.ctx.drawImage(potatoImage, entity.x + entity.width / 2 - potatoImage.width * scale / 2, topLeftPos.y, potatoImage.width * scale, potatoImage.height * scale);
                     }
                 } else if (entity.x < that.camera.screenToWorld(-potatoImage.width, 0).x) {
-                    //scale = 1 - 1 * (entity.x - that.camera.screenToWorld(-potatoImage.width, 0).x) / 1000;
+                    scale = scale - scale * (entity.x - that.camera.screenToWorld(-potatoImage.width, 0).x) / 1000;
                     that.ctx.drawImage(potatoImage, topLeftPos.x, entity.y, potatoImage.width * scale, potatoImage.height * scale);
                 } else if (entity.x > topRightPos.x) {
-                    //scale = 1 - 1 * (topRightPos.x - entity.x) / 1000;
+                    scale = scale - scale * (topRightPos.x - entity.x) / 1000;
                     that.ctx.drawImage(potatoImage, that.camera.screenToWorld(that.ctx.canvas.width - potatoImage.width * scale, 0).x, entity.y, potatoImage.width * scale, potatoImage.height * scale);
                 }
             }

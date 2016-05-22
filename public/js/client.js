@@ -51,13 +51,13 @@ $(function(){
            var data;
            switch(key) {
                 case 82: // {r} key
-                    if (!gameworld.gameStarted) {
+                    //if (!gameworld.gameStarted) {
                         data = {
                             theFunc: 'toggleReady',
                             playerId: myPlayerId
                         };
                         socket.emit('server_update', data);
-                    }
+                    //}
                     break;
                 //case 50: // {2} key, testing code to spawn powerUp
                 //   data = {
@@ -165,7 +165,7 @@ $(function(){
             // ASSET_MANAGER.queueDownload("../img/background_3.jpg");
             ASSET_MANAGER.queueDownload("../img/clouds_highres.png");
             ASSET_MANAGER.queueDownload("../img/new_potato.png");
-            ASSET_MANAGER.queueDownload("../img/arrow.png");
+            //ASSET_MANAGER.queueDownload("../img/arrow.png");
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
 

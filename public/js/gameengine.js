@@ -772,7 +772,9 @@
     };
 
     GameEngine.prototype.toggleReady = function (data) {
-        this.players.get(data.playerId).isReady ^= true;
+        if (this.myGameState === this.gameStates.waiting) {
+            this.players.get(data.playerId).isReady ^= true;
+        }
         console.log('Player ' + data.playerId + ' is' + (this.players.get(data.playerId).isReady ? ' ' : ' not ') + 'ready.');
         // this.addPotato(data);
     };
@@ -782,7 +784,7 @@
         var that = this;
         var index = 0;
         this.players.forEach(function(player) {
-            //player.isReady = false;
+            player.isReady = true;
             var playerBody = that.playersB2d.get(player.playerId); 
             var position = new Box2D.Common.Math.b2Vec2(
                 (400 + index * 2 * player.width) / that.SCALE, 
