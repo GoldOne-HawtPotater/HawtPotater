@@ -28,7 +28,6 @@
     var GameEngine = function () {
         this.background = new Background();
 
-        this.currentPotato = null;
         this.players = new Map();
         this.playersB2d = new Map();
         this.entities = new Map();
@@ -178,13 +177,11 @@
             entity.position = body.GetPosition();
 
             if (body.type = "POTATO" && entity) {
-                that.currentPotato = entity;
                 var velocity = body.GetLinearVelocity();
                 // Cap the velocity at 5
                 if (velocity.x > 5) {
                     velocity.x = 5;
-                }
-                if (velocity.y > 5) {
+                } else if (velocity.y > 1) {
                     velocity.y = 5;
                 }
             }
@@ -264,6 +261,7 @@
             this.resetPlayerPositions(); 
             this.players.forEach(function(player) {
                 player.isReady = false;
+                player.multiJumpCounter = 0;
             }); 
             this.createPlatforms({});
             // clear the room  

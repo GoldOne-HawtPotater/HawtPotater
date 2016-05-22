@@ -161,16 +161,29 @@ $(function(){
             // that.camypos.min = that.camypos.min < entity.y + offset? that.camypos.min : entity.y + offset;
             // that.camypos.max = that.camypos.max > entity.y - offset? that.camypos.max : entity.y - offset;
 
-            // Draw arrow for the potato
-            //if (that.gameEngine.potatoCreationQueue.length > 0) {
-                var potato = that.gameEngine.currentPotato;
-                var arrowImage = ASSET_MANAGER.getAsset("../img/arrow.png");
-                var position = that.camera.screenToWorld(0, 0);
-
-                if (potato.y < position.y) {                                                       // scale by 0.75
-                    that.ctx.drawImage(arrowImage, potato.x + potato.width / 2 - arrowImage.width * .75 / 2, position.y, arrowImage.width * .75, arrowImage.height * .75);
+            // Draw indicator for the potato
+            if (entity.constructor.name === "Potato") {
+                var potatoImage = ASSET_MANAGER.getAsset("../img/new_potato.png");
+                var topLeftPos = that.camera.screenToWorld(0, 0);
+                var topRightPos = that.camera.screenToWorld(that.ctx.canvas.width, 0);
+                var scale = 0.5;
+                if (entity.y < that.camera.screenToWorld(0, 0/*-potatoImage.height*/).y) {                                                   
+                    //scale = 1 - 1 * (topLeftPos.y - entity.y) / 1000;
+                    if (entity.x < that.camera.screenToWorld(-potatoImage.width, 0).x) {
+                        that.ctx.drawImage(potatoImage, topLeftPos.x, topLeftPos.y, potatoImage.width * scale, potatoImage.height * scale);
+                    } else if (entity.x > topRightPos.x) {
+                        that.ctx.drawImage(potatoImage, that.camera.screenToWorld(that.ctx.canvas.width - potatoImage.width * scale, 0).x, topRightPos.y, potatoImage.width * scale, potatoImage.height * scale);
+                    } else {
+                        that.ctx.drawImage(potatoImage, entity.x + entity.width / 2 - potatoImage.width * scale / 2, topLeftPos.y, potatoImage.width * scale, potatoImage.height * scale);
+                    }
+                } else if (entity.x < that.camera.screenToWorld(-potatoImage.width, 0).x) {
+                    //scale = 1 - 1 * (entity.x - that.camera.screenToWorld(-potatoImage.width, 0).x) / 1000;
+                    that.ctx.drawImage(potatoImage, topLeftPos.x, entity.y, potatoImage.width * scale, potatoImage.height * scale);
+                } else if (entity.x > topRightPos.x) {
+                    //scale = 1 - 1 * (topRightPos.x - entity.x) / 1000;
+                    that.ctx.drawImage(potatoImage, that.camera.screenToWorld(that.ctx.canvas.width - potatoImage.width * scale, 0).x, entity.y, potatoImage.width * scale, potatoImage.height * scale);
                 }
-            //}
+            }
         });
 
         /** Draw Players **/
