@@ -193,7 +193,8 @@
                 // Cap the velocity at 5
                 if (velocity.x > 5) {
                     velocity.x = 5;
-                } else if (velocity.y > 5) {
+                }
+                if (velocity.y > 5) {
                     velocity.y = 5;
                 }
             }
