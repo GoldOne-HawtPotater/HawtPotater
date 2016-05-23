@@ -60,9 +60,12 @@
 
     // Moving platforms
     function MovingPlatform(x, y, data) {
-        this.tileset = data.tileset;
+        this.tilemap = data.tilemap;
+        this.tileset = this.tilemap.tilesets[0];
         this.tiles = data.tiles;
         var type = [];
+        // horizontal-200-1-0
+        // direction+distance+speed+delay
         if (data.type.indexOf('-') >= 0) {
             type = data.type.split('-');
             this.directionValue = -1;
@@ -71,10 +74,10 @@
             this.directionValue = 1;
         }
         this.direction = type[0];
-        this.offsetReset = type[1];
-        this.offset = type[1];
-        this.speed = (type.length > 3) ? type[2] : 1;
-        this.delay = (type.length > 4) ? type[3] : 0;
+        this.offset = parseInt(type[1]);
+        this.offsetReset = this.offset;
+        this.speed = (type.length > 3) ? parseInt(type[2]) : 1;
+        this.delay = (type.length > 4) ? parseFloat(type[3]) : 0;
         this.tileHeight = this.tileset.tileheight;
         this.tileWidth = this.tileset.tilewidth;
 
@@ -84,8 +87,8 @@
     MovingPlatform.prototype = new Entity();
     MovingPlatform.prototype.constructor = MovingPlatform;
 
-    MovingPlatform.prototype.update = function () {
-
+    MovingPlatform.prototype.update = function (clockTick) {
+        if (this.delay > 0) this.delay -= clockTick
     }
 
     MovingPlatform.prototype.draw = function (ctx) {
@@ -93,16 +96,44 @@
         var tileHeight = this.tileHeight;
         var tileWidth = this.tileWidth;
         var tileset = this.tileset;
+        var originalXPos = null, originalYPos = null;
 
-        for (var i = 0; i < this.tiles.length; i++) {
-            var xindex = (this.tiles[i]-1) % tileset.columns;
-            var yindex = Math.floor((this.tiles[i]-1) / tileset.columns);
-            ctx.drawImage(spriteSheet,
-                          xindex * tileWidth, yindex * tileHeight,  // source from sheet
-                          tileWidth, tileHeight,
-                          this.x + i * tileWidth - tileWidth*1.5, this.y - tileHeight/2,
-                          tileWidth, tileHeight
-                          );
+
+
+        // for (var i = 0; i < this.tiles.length; i++) {
+        //     var xindex = (this.tiles[i]-1) % tileset.columns;
+        //     var yindex = Math.floor((this.tiles[i]-1) / tileset.columns);
+        //     // ctx.drawImage(spriteSheet,
+        //     //               xindex * tileWidth, yindex * tileHeight,  // source from sheet
+        //     //               tileWidth, tileHeight,
+        //     //               this.x + i * tileWidth - tileWidth*1.5, this.y - tileHeight/2,
+        //     //               tileWidth, tileHeight
+        //     //               );
+        //     ctx.drawImage(spriteSheet,
+        //                   xindex * tileWidth, yindex * tileHeight,  // source from sheet
+        //                   tileWidth - 0.5, tileHeight - 0.5,
+        //                   this.x + i * tileWidth - tileWidth, this.y - tileHeight/2,
+        //                   tileWidth, tileHeight
+        //                   );
+        // }
+
+        for (var j = 0; j < this.tiles.length; j++) {
+            if (this.tiles[j] != 0) {
+                if (originalXPos == null && originalYPos == null) {
+                    originalXPos = (j % this.tilemap.width) * tileWidth;
+                    originalYPos = Math.floor(j / this.tilemap.width) * tileHeight;
+                }
+                var xindex = (this.tiles[j]-1) % tileset.columns;
+                var yindex = Math.floor((this.tiles[j]-1) / tileset.columns);
+                ctx.drawImage(  
+                    spriteSheet,
+                    xindex * tileWidth, yindex * tileHeight,  // source from sheet
+                    tileWidth - 0.5, tileHeight - 0.5,
+                    (j % this.tilemap.width) * tileWidth - (originalXPos - this.x) - tileWidth, 
+                    Math.floor(j / this.tilemap.width) * tileHeight - (originalYPos - this.y) - tileHeight/2, 
+                    tileWidth, tileHeight
+                );
+            }
         }
     }
 

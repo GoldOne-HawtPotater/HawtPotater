@@ -168,6 +168,7 @@ $(function(){
             //ASSET_MANAGER.queueDownload("../img/arrow.png");
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
+            ASSET_MANAGER.queueDownload("../img/platforms/tilesheet_complete.png");
 
             // Dog
             var numberOfFrames = 15;
