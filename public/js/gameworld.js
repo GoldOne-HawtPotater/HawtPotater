@@ -28,7 +28,7 @@ $(function(){
         this.camxpos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
         this.camypos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
 
-        this.debug = true;
+        this.debug = false;
     }
     window.GameWorld = GameWorld;
 
