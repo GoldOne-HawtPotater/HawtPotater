@@ -373,7 +373,7 @@
 
 
 
-    var Potato = function(potatoData) {
+    function Potato(potatoData) {
         if (isClient) {
             this.sprite = new Animation(('../img/new_potato'), 1);
         }

@@ -28,7 +28,6 @@
     var GameEngine = function () {
         this.background = new Background();
 
-        this.currentPotato = null;
         this.players = new Map();
         this.playersB2d = new Map();
         this.entities = new Map();
@@ -190,7 +189,6 @@
             entity.position = body.GetPosition();
 
             if (body.type = "POTATO" && entity) {
-                that.currentPotato = entity;
                 var velocity = body.GetLinearVelocity();
                 // Cap the velocity at 5
                 if (velocity.x > 5) {
@@ -276,6 +274,7 @@
             this.resetPlayerPositions(); 
             this.players.forEach(function(player) {
                 player.isReady = false;
+                player.multiJumpCounter = 0;
             }); 
             that.platformPositionData = null;
             this.createPlatforms({});
@@ -774,7 +773,9 @@
     };
 
     GameEngine.prototype.toggleReady = function (data) {
-        this.players.get(data.playerId).isReady ^= true;
+        if (this.myGameState === this.gameStates.waiting) {
+            this.players.get(data.playerId).isReady ^= true;
+        }
         console.log('Player ' + data.playerId + ' is' + (this.players.get(data.playerId).isReady ? ' ' : ' not ') + 'ready.');
         // this.addPotato(data);
     };
@@ -784,7 +785,7 @@
         var that = this;
         var index = 0;
         this.players.forEach(function(player) {
-            //player.isReady = false;
+            player.isReady = true;
             var playerBody = that.playersB2d.get(player.playerId); 
             var position = new Box2D.Common.Math.b2Vec2(
                 (400 + index * 2 * player.width) / that.SCALE, 
