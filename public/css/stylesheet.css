@@ -10,6 +10,10 @@
 
 /* ------------ Body styles ------------ */
 
+.playerNotes {
+	margin: 10px;
+	font-weight: bold;
+}
 
 body {
 	background-color: #f0f1f3;
@@ -173,7 +177,6 @@ body {
 /* ------ Home ------ */
 .homesection {
 	text-align:center;
-	margin-top:140px;
 }
 
 .node {
