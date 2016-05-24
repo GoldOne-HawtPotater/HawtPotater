@@ -23,7 +23,7 @@ MapCreator.prototype.drawMap = function (ctx, flipH, flipV) {
     				// console.log('(x,y) - : (' + (j % currLayer.width) * tileWidth + ', ' + Math.floor(j / currLayer.width) * tileHeight + ') - (' + xindex + ', ' + yindex + ')');
 				    ctx.drawImage(this.spriteSheet,
 				                  xindex * tileWidth, yindex * tileHeight,  // source from sheet
-				                  tileWidth, tileHeight,
+				                  tileWidth - 0.5, tileHeight - 0.5,
 				                  (j % currLayer.width) * tileWidth, Math.floor(j / currLayer.width) * tileHeight,
                                   tileWidth, tileHeight
                                   );

@@ -157,21 +157,25 @@
                 var platform = that.movingPlatforms[i];
                 var b2dPlatform = that.movingPlatformsB2d[i];
 
-                if (platform.offset <= 0) {
-                    platform.offset = platform.offsetReset; // reset the offset
-                    platform.directionValue *= -1; // flip the direciton value
-                }
+                if (platform.delay <= 0) {
+                    if (platform.offset <= 0) {
+                        platform.offset = platform.offsetReset; // reset the offset
+                        platform.directionValue *= -1; // flip the direciton value
+                    }
 
-                var vel = b2dPlatform.GetLinearVelocity();
-                if (platform.direction.indexOf('vertical') >= 0) {
-                    vel.y = platform.speed * platform.directionValue;
+                    var vel = b2dPlatform.GetLinearVelocity();
+                    if (platform.direction.indexOf('vertical') >= 0) {
+                        vel.y = platform.speed * platform.directionValue;
+                    } else {
+                        vel.x = platform.speed * platform.directionValue;
+                    }
+                    b2dPlatform.SetLinearVelocity(vel);
+                    platform.x = b2dPlatform.GetPosition().x * that.SCALE;
+                    platform.y = b2dPlatform.GetPosition().y * that.SCALE;
+                    platform.offset -= platform.speed; 
                 } else {
-                    vel.x = platform.speed * platform.directionValue;
+                    platform.update(that.clockTick);
                 }
-                b2dPlatform.SetLinearVelocity(vel);
-                platform.x = b2dPlatform.GetPosition().x * that.SCALE;
-                platform.y = b2dPlatform.GetPosition().y * that.SCALE;
-                platform.offset -= platform.speed;
             }
         }
 
@@ -395,8 +399,13 @@
 
                 that.movingPlatformsB2d.push(platformBody);
 
+                // var data = {
+                //     tileset: tileMap.tilesets[0],
+                //     tiles: tile.data.filter(function(value) { return value > 0; }),
+                //     type: colObj.type
+                // }
                 var data = {
-                    tileset: tileMap.tilesets[0],
+                    tilemap: tileMap,
                     tiles: tile.data.filter(function(value) { return value > 0; }),
                     type: colObj.type
                 }

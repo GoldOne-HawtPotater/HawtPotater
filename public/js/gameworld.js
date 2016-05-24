@@ -40,7 +40,7 @@ $(function(){
         // this.lobbyMap = new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps['map01']);
         this.gameMaps = [];
         for (key in TileMaps) {
-            this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset("../img/platforms/map_spritesheet_01.png"), TileMaps[key]));
+            this.gameMaps.push(new MapCreator(ASSET_MANAGER.getAsset(TileMaps[key].tilesets[0].image), TileMaps[key]));
         }
 
 
@@ -71,8 +71,6 @@ $(function(){
                     var setEndTime = Date.now() + 35000;
                     that.startTime = setStartTime;
                     //var setEndTime = Date.now() + 300000;
-
-                    // that.mapNum = 3;
 
                     var data = {
                         theFunc: 'setGame',
@@ -120,13 +118,13 @@ $(function(){
             this.camypos = {min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER};
         }
 
+        this.gameEngine.background.draw(this.ctx);
+
         if (this.debug) {
             // b2d debug
             this.gameEngine.b2dWorld.DrawDebugData();
             this.gameEngine.b2dWorld.ClearForces();    
         }
-
-        this.gameEngine.background.draw(this.ctx);
 
         if (this.gameEngine.myGameState != this.gameEngine.gameStates.waiting) {
             /** Draw map **/
