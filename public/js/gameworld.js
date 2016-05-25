@@ -242,11 +242,11 @@ $(function(){
 
 
         // Timer for the dropping of a new "main" potato (potato not spawned by a power up) 
-        if (this.gameEngine.potatoCreationQueue.length > 0) {
+        if (this.gameEngine.mainPotatoQueue) {
             // We do not need to check for null array elements for the time being since we flush the creationQueue 
             // on every update and if the queue is larger than 0 we are guaranteed an element in position 0. 
             var position = that.camera.screenToWorld(250, 70);
-            that.ctx.fillText("New Potato In: " + (Math.ceil((this.gameEngine.potatoCreationQueue[0].timeToDrop - Date.now()) / 1000)) + " seconds", position.x, position.y);
+            that.ctx.fillText("New Potato In: " + (Math.ceil((this.gameEngine.mainPotatoQueue.timeToDrop - Date.now()) / 1000)) + " seconds", position.x, position.y);
         }
 
         if (drawCallback) {

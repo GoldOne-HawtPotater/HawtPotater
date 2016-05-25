@@ -169,6 +169,8 @@ $(function(){
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
             ASSET_MANAGER.queueDownload("../img/platforms/tilesheet_complete.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/potatooverload_powerup.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/slowgravity_powerup.png");
 
             // Dog
             var numberOfFrames = 15;

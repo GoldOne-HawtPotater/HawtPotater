@@ -16,6 +16,8 @@
         Potato = EntityCollection.Potato,
         HawtDogge = EntityCollection.HawtDogge,
         MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp,
+        PotatoOverloadPowerUp = EntityCollection.PotatoOverloadPowerUp,
+        SlowGravityPowerUp = EntityCollection.SlowGravityPowerUp,
         MovingPlatform = EntityCollection.MovingPlatform,
         HawtSheep = EntityCollection.HawtSheep,
         HawtChicken = EntityCollection.HawtChicken,
@@ -34,9 +36,13 @@
         this.entitiesB2d = new Map();
         this.platformsB2d = [];
         this.graveyard = [];
+        this.mainPotato = null;
+        this.mainPotatoQueue = null;
+        this.alteredGameWorld = false;
+        this.resetGameWorldTimer = null;
         this.potatoCreationQueue = [];
         this.powerUpNextDrop = null;
-        this.powerUpDelay = 10000;
+        this.powerUpDelay = 5000;
         this.platformPositionData = null;
         this.endGameTime = null;
         this.movingPlatforms = [];
@@ -100,7 +106,7 @@
             } else {
                 that.myGameState = that.gameStates.playing;
                 if (that.platformPositionData){
-                    that.potatoCreationQueue.push({ 
+                    that.mainPotatoQueue = ({ 
                             x: (that.platformPositionData.minX + that.platformPositionData.maxX)/2, 
                             y: 25, 
                             time: data.time, 
@@ -128,6 +134,13 @@
             ,  10       //position iterations
         );
 
+        /** Check for altered game world status and reset if necessary **/
+        if (this.alteredGameWorld && this.resetGameWorldTimer && this.resetGameWorldTimer < Date.now()) {
+            this.alteredGameWorld = false;
+            this.b2dWorld.SetGravity(new Box2D.Common.Math.b2Vec2(0, 10));
+            this.resetGameWorldTimer = null;
+        }
+
         /** Removes Entities from the world that need to be removed **/
         for (var x = 0; x < this.graveyard.length; x++) {
             this.removeEntity({entityId: this.graveyard[x].entityId});
@@ -149,6 +162,12 @@
         
         // We "reset" the queue so that we never have any null elements while checking the time in gameWorld
         this.potatoCreationQueue = potatosNotReady;
+
+        // Spawning checks for the main potato of the game
+        if (this.mainPotatoQueue && this.mainPotatoQueue.timeToDrop <= Date.now()) {
+            this.addPotato({ x: this.mainPotatoQueue.x, y: this.mainPotatoQueue.y, time: this.mainPotatoQueue.time, isMainPotato: true });
+            this.mainPotatoQueue = null;
+        }
 
         var that = this;
         /** Update the moving platforms **/
@@ -268,6 +287,11 @@
             this.myGameState = this.gameStates.waiting;
             this.endGameTime = null;
             this.powerUpNextDrop = null;
+            this.mainPotato = null;
+            this.mainPotatoQueue = null;
+            this.alteredGameWorld = false;
+            this.b2dWorld.SetGravity(new Box2D.Common.Math.b2Vec2(0, 10));
+            this.resetGameWorldTimer = null;
             var entityIds = this.entities.keys();
             var nextEntity = entityIds.next();
             while (!nextEntity.done) {
@@ -637,10 +661,26 @@
         //data.x = body.GetPosition().x * this.SCALE;
         //data.y = body.GetPosition().y * this.SCALE;
 
-        var powerUp = new MultiJumpPowerUp({
-            x: bodyDef.position.x,
-            y: bodyDef.position.y
-        });
+        var rollPowerUp = Math.floor(Math.random() * (3 - 0) + 0);
+
+        var powerUp;
+
+        if (rollPowerUp == 1) {
+            powerUp = new MultiJumpPowerUp({
+                x: bodyDef.position.x,
+                y: bodyDef.position.y
+            });
+        } else if (rollPowerUp == 2) {
+            powerUp = new PotatoOverloadPowerUp({
+                x: bodyDef.position.x,
+                y: bodyDef.position.y
+            });
+        } else {
+            powerUp = new SlowGravityPowerUp({
+                x: bodyDef.position.x,
+                y: bodyDef.position.y
+            });
+        }
 
         // Set the data to be stored by the object for collisions
         body.SetUserData({
@@ -689,6 +729,12 @@
             y: data.y,
             id: data.time
         });
+
+        console.log("Made a new Potato with id: " + data.time);
+
+        if (data.isMainPotato && this.mainPotato == null) {
+            this.mainPotato = potato;
+        }
 
         body.SetUserData({
             type: "POTATO",
