@@ -173,6 +173,78 @@
         this.rotation = entity.rotation;
     }
 
+    /** Slow Gravity Power Up Class **/
+    var SlowGravityPowerUp = function (powerUpData) {
+        if (isClient) {
+            this.sprite = new Animation(('../img/powerups/slowgravity_powerup'), 1);
+        }
+        this.width = 64;
+        this.height = 64;
+        PowerUp.call(this, powerUpData.x, powerUpData.y);
+    }
+
+    SlowGravityPowerUp.prototype = new PowerUp();
+    SlowGravityPowerUp.prototype.constructor = SlowGravityPowerUp;
+
+    SlowGravityPowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    SlowGravityPowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    SlowGravityPowerUp.prototype.givePower = function (data) {
+        data.gameEngine.b2dWorld.SetGravity(new Box2D.Common.Math.b2Vec2(0, 4.5));
+        data.gameEngine.alteredGameWorld = true;
+        data.gameEngine.resetGameWorldTimer = Date.now() + 7500;
+        PowerUp.prototype.givePower.call(this);
+    }
+
+    SlowGravityPowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
+
+    /** Potato Overload Power Up Class **/
+    var PotatoOverloadPowerUp = function (powerUpData) {
+        if (isClient) {
+            this.sprite = new Animation(('../img/powerups/potatooverload_powerup'), 1);
+        }
+        this.width = 64;
+        this.height = 64;
+        PowerUp.call(this, powerUpData.x, powerUpData.y);
+    }
+
+    PotatoOverloadPowerUp.prototype = new PowerUp();
+    PotatoOverloadPowerUp.prototype.constructor = PotatoOverloadPowerUp;
+
+    PotatoOverloadPowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    PotatoOverloadPowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    PotatoOverloadPowerUp.prototype.givePower = function (data) {
+        var numOfPotatos = 25;
+        var startingX;
+        var startingY;
+        for (var x = 0; x < numOfPotatos; x++) {
+            startingX = (data.gameEngine.platformPositionData.minX + (Math.floor(Math.random() * data.gameEngine.platformPositionData.maxX)));
+            startingY = 50;
+            data.gameEngine.potatoCreationQueue.push({ x: startingX, y: startingY, time: Date.now() + x, timeToDrop: Date.now() });
+        }
+        PowerUp.prototype.givePower.call(this);
+    }
+
+    PotatoOverloadPowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
 
     /** Multi-Jump Power Up Class **/
     var MultiJumpPowerUp = function(powerUpData) {
@@ -438,13 +510,14 @@
     Potato.prototype.processCollision = function(data) {
         if (data.objectCollided.type == "PLAYER") {
             data.gameEngine.players.get(data.objectCollided.id).score += 1;
-        } else if (data.objectCollided.type == "PLATFORM" && this.y >= 100) {
+        } else if (data.objectCollided.type == "PLATFORM") {
             data.gameEngine.graveyard.push({ entityId: this.id });
 
             // Uncomment the following line to spawn a new potato in a random spot on respawn
             // data.gameEngine.potatoCreationQueue.push({ x: Math.random() * (1100 - 200) + 200, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
-            if (data.gameEngine.myGameState == data.gameEngine.gameStates.playing) {
-                data.gameEngine.potatoCreationQueue.push({ x: this.startingX, y: this.startingY, time: Date.now(), timeToDrop: Date.now() + 3000 });
+            if (data.gameEngine.myGameState == data.gameEngine.gameStates.playing && data.gameEngine.mainPotato == this) {
+                data.gameEngine.mainPotatoQueue = ({ x: this.startingX, y: this.startingY, time: -150, timeToDrop: Date.now() + 3000 });
+                data.gameEngine.mainPotato = null;
             }
         }
     }
@@ -452,6 +525,8 @@
     // Add entities to the collection.
     EntityCollection.Entity = Entity;
     EntityCollection.MultiJumpPowerUp = MultiJumpPowerUp;
+    EntityCollection.PotatoOverloadPowerUp = PotatoOverloadPowerUp;
+    EntityCollection.SlowGravityPowerUp = SlowGravityPowerUp;
     EntityCollection.HawtPlayer = HawtPlayer;
     EntityCollection.Background = Background;
     EntityCollection.Potato = Potato;
