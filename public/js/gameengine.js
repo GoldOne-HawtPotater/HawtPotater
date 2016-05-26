@@ -109,7 +109,7 @@
                     that.mainPotatoQueue = ({ 
                             x: (that.platformPositionData.minX + that.platformPositionData.maxX)/2, 
                             y: 25, 
-                            time: data.time, 
+                            time: -150, 
                             timeToDrop: Date.now() + 5000 
                         });
                 } else {
