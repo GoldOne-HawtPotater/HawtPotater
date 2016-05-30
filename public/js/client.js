@@ -277,8 +277,35 @@ $(function(){
         }
     });
 
+    var enableMobileControls = function() {
+        var ele;
+        // Setup jump
+        ele = $("#mJump")[0];
+        ele.addEventListener("touchstart", function() {
+            var data = {
+                theFunc: 'jumpPlayer',
+                playerId: myPlayerId,
+                value: true
+            };
+            var player = gameworld.gameEngine.playersB2d.get(myPlayerId);
+            var playerEnt = gameworld.gameEngine.players.get(myPlayerId);
+            if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
+                socket.emit('server_update', data);
+            }
+        }, false);
+        ele = $("#mMoveLeft")[0];
+        ele = $("#mMoveRight")[0];
+        ele = $("#mReady")[0];
+        ele = $("#mAttack")[0];
+        ele = $("#mDodge")[0];
+
+          // el.addEventListener("touchstart", handleStart, false);
+          // el.addEventListener("touchend", handleEnd, false);
+    };
+
     socket.on('setcontroller', function(data) {
         if (mobilecheck()) {
+            enableMobileControls();
             $("#mobileControls").show();
             $("#sectionCanvas").hide();
             $("#sectionControls").hide();
