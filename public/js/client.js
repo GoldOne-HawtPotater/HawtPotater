@@ -278,10 +278,8 @@ $(function(){
     });
 
     var enableMobileControls = function() {
-        var ele;
         // Setup jump
-        ele = $("#mJump")[0];
-        ele.addEventListener("touchstart", function() {
+        $("#mJump")[0].addEventListener("touchstart", function() {
             var data = {
                 theFunc: 'jumpPlayer',
                 playerId: myPlayerId,
@@ -292,20 +290,92 @@ $(function(){
             if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
                 socket.emit('server_update', data);
             }
-        }, false);
-        ele = $("#mMoveLeft")[0];
-        ele = $("#mMoveRight")[0];
-        ele = $("#mReady")[0];
-        ele = $("#mAttack")[0];
-        ele = $("#mDodge")[0];
+        });
+
+        // Setup Ready
+        $("#mReady")[0].addEventListener("touchstart", function() {
+            socket.emit('server_update', {
+                theFunc: 'toggleReady',
+                playerId: myPlayerId
+            });
+        });
+
+        // Setup attack
+        $("#mAttack")[0].addEventListener("touchstart", function() {
+            socket.emit('server_update', {
+                theFunc: 'attack',
+                playerId: myPlayerId
+            });
+        });
+
+        // Setup dodge
+        $("#mDodge")[0].addEventListener("touchstart", function() {
+            socket.emit('server_update', {
+                theFunc: 'dodge',
+                playerId: myPlayerId
+            });
+        });
+
+        // Setup Move left
+        $("#mMoveLeft")[0].addEventListener("touchstart", function() {
+            var key = 37;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: true
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
+        $("#mMoveLeft")[0].addEventListener("touchend", function() {
+            var key = 37;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: false
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
+
+        // Setup Move right
+        $("#mMoveRight")[0].addEventListener("touchstart", function() {
+            var key = 39;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: true
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
+        $("#mMoveRight")[0].addEventListener("touchend", function() {
+            var key = 39;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: false
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
 
           // el.addEventListener("touchstart", handleStart, false);
           // el.addEventListener("touchend", handleEnd, false);
     };
 
     socket.on('setcontroller', function(data) {
-        if (mobilecheck()) {
+        if (true || mobilecheck()) {
             enableMobileControls();
+            $(".instruction").hide();
             $("#mobileControls").show();
             $("#sectionCanvas").hide();
             $("#sectionControls").hide();
