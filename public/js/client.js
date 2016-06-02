@@ -190,6 +190,9 @@ $(function(){
             ASSET_MANAGER.queueDownload("../img/powerups/size.jpg"); 
             ASSET_MANAGER.queueDownload("../img/powerups/shrink.jpg");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
+            ASSET_MANAGER.queueDownload("../img/platforms/tilesheet_complete.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/potatooverload_powerup.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/slowgravity_powerup.png");
 
             // Dog
             var numberOfFrames = 15;
@@ -301,8 +304,105 @@ $(function(){
         }
     });
 
+    var enableMobileControls = function() {
+        // Setup jump
+        $("#mJump")[0].addEventListener("touchstart", function() {
+            var data = {
+                theFunc: 'jumpPlayer',
+                playerId: myPlayerId,
+                value: true
+            };
+            var player = gameworld.gameEngine.playersB2d.get(myPlayerId);
+            var playerEnt = gameworld.gameEngine.players.get(myPlayerId);
+            if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
+                socket.emit('server_update', data);
+            }
+        });
+
+        // Setup Ready
+        $("#mReady")[0].addEventListener("touchstart", function() {
+            socket.emit('server_update', {
+                theFunc: 'toggleReady',
+                playerId: myPlayerId
+            });
+        });
+
+        // Setup attack
+        $("#mAttack")[0].addEventListener("touchstart", function() {
+            socket.emit('server_update', {
+                theFunc: 'attack',
+                playerId: myPlayerId
+            });
+        });
+
+        // Setup dodge
+        $("#mDodge")[0].addEventListener("touchstart", function() {
+            socket.emit('server_update', {
+                theFunc: 'dodge',
+                playerId: myPlayerId
+            });
+        });
+
+        // Setup Move left
+        $("#mMoveLeft")[0].addEventListener("touchstart", function() {
+            var key = 37;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: true
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
+        $("#mMoveLeft")[0].addEventListener("touchend", function() {
+            var key = 37;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: false
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
+
+        // Setup Move right
+        $("#mMoveRight")[0].addEventListener("touchstart", function() {
+            var key = 39;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: true
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
+        $("#mMoveRight")[0].addEventListener("touchend", function() {
+            var key = 39;
+            var data = {
+                theFunc: 'movePlayer',
+                playerId: myPlayerId,
+                direction: key,
+                value: false
+            };
+            if (!gameworld.gameEngine.players.get(myPlayerId).isMovingLeft) {
+                socket.emit('server_update', data);
+            }
+        });
+
+          // el.addEventListener("touchstart", handleStart, false);
+          // el.addEventListener("touchend", handleEnd, false);
+    };
+
     socket.on('setcontroller', function(data) {
-        if (mobilecheck()) {
+        if (true || mobilecheck()) {
+            enableMobileControls();
+            $(".instruction").hide();
             $("#mobileControls").show();
             $("#sectionCanvas").hide();
             $("#sectionControls").hide();

@@ -18,6 +18,8 @@
         MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp,
         SizePowerUp = EntityCollection.SizePowerUp,
         ShrinkPowerUp = EntityCollection.ShrinkPowerUp,
+        PotatoOverloadPowerUp = EntityCollection.PotatoOverloadPowerUp,
+        SlowGravityPowerUp = EntityCollection.SlowGravityPowerUp,
         MovingPlatform = EntityCollection.MovingPlatform,
         HawtSheep = EntityCollection.HawtSheep,
         HawtChicken = EntityCollection.HawtChicken,
@@ -38,9 +40,13 @@
         this.entitiesB2d = new Map();
         this.platformsB2d = [];
         this.graveyard = [];
+        this.mainPotato = null;
+        this.mainPotatoQueue = null;
+        this.alteredGameWorld = false;
+        this.resetGameWorldTimer = null;
         this.potatoCreationQueue = [];
         this.powerUpNextDrop = null;
-        this.powerUpDelay = 10000;
+        this.powerUpDelay = 5000;
         this.platformPositionData = null;
         this.endGameTime = null;
         this.movingPlatforms = [];
@@ -113,10 +119,10 @@
             } else {
                 that.myGameState = that.gameStates.playing;
                 if (that.platformPositionData){
-                    that.potatoCreationQueue.push({ 
+                    that.mainPotatoQueue = ({ 
                             x: (that.platformPositionData.minX + that.platformPositionData.maxX)/2, 
                             y: 25, 
-                            time: data.time, 
+                            time: -150, 
                             timeToDrop: Date.now() + 5000 
                         });
                 } else {
@@ -152,6 +158,13 @@
         }
         this.newBodies = [];
 
+        /** Check for altered game world status and reset if necessary **/
+        if (this.alteredGameWorld && this.resetGameWorldTimer && this.resetGameWorldTimer < Date.now()) {
+            this.alteredGameWorld = false;
+            this.b2dWorld.SetGravity(new Box2D.Common.Math.b2Vec2(0, 10));
+            this.resetGameWorldTimer = null;
+        }
+
         /** Removes Entities from the world that need to be removed **/
         for (var x = 0; x < this.graveyard.length; x++) {
             this.removeEntity({entityId: this.graveyard[x].entityId});
@@ -174,27 +187,39 @@
         // We "reset" the queue so that we never have any null elements while checking the time in gameWorld
         this.potatoCreationQueue = potatosNotReady;
 
+        // Spawning checks for the main potato of the game
+        if (this.mainPotatoQueue && this.mainPotatoQueue.timeToDrop <= Date.now()) {
+            this.addPotato({ x: this.mainPotatoQueue.x, y: this.mainPotatoQueue.y, time: this.mainPotatoQueue.time, isMainPotato: true });
+            this.mainPotatoQueue = null;
+        }
+
+        var that = this;
+
         /** Update the moving platforms **/
         if (this.myGameState == this.gameStates['playing']){
             for (var i = 0; i < that.movingPlatforms.length; i++) {
                 var platform = that.movingPlatforms[i];
                 var b2dPlatform = that.movingPlatformsB2d[i];
 
-                if (platform.offset <= 0) {
-                    platform.offset = platform.offsetReset; // reset the offset
-                    platform.directionValue *= -1; // flip the direciton value
-                }
+                if (platform.delay <= 0) {
+                    if (platform.offset <= 0) {
+                        platform.offset = platform.offsetReset; // reset the offset
+                        platform.directionValue *= -1; // flip the direciton value
+                    }
 
-                var vel = b2dPlatform.GetLinearVelocity();
-                if (platform.direction.indexOf('vertical') >= 0) {
-                    vel.y = platform.speed * platform.directionValue;
+                    var vel = b2dPlatform.GetLinearVelocity();
+                    if (platform.direction.indexOf('vertical') >= 0) {
+                        vel.y = platform.speed * platform.directionValue;
+                    } else {
+                        vel.x = platform.speed * platform.directionValue;
+                    }
+                    b2dPlatform.SetLinearVelocity(vel);
+                    platform.x = b2dPlatform.GetPosition().x * that.SCALE;
+                    platform.y = b2dPlatform.GetPosition().y * that.SCALE;
+                    platform.offset -= platform.speed; 
                 } else {
-                    vel.x = platform.speed * platform.directionValue;
+                    platform.update(that.clockTick);
                 }
-                b2dPlatform.SetLinearVelocity(vel);
-                platform.x = b2dPlatform.GetPosition().x * that.SCALE;
-                platform.y = b2dPlatform.GetPosition().y * that.SCALE;
-                platform.offset -= platform.speed;
             }
         }
 
@@ -216,7 +241,8 @@
                 // Cap the velocity at 5
                 if (velocity.x > 5) {
                     velocity.x = 5;
-                } else if (velocity.y > 5) {
+                }
+                if (velocity.y > 5) {
                     velocity.y = 5;
                 }
             }
@@ -288,6 +314,11 @@
             this.myGameState = this.gameStates.waiting;
             this.endGameTime = null;
             this.powerUpNextDrop = null;
+            this.mainPotato = null;
+            this.mainPotatoQueue = null;
+            this.alteredGameWorld = false;
+            this.b2dWorld.SetGravity(new Box2D.Common.Math.b2Vec2(0, 10));
+            this.resetGameWorldTimer = null;
             var entityIds = this.entities.keys();
             var nextEntity = entityIds.next();
             while (!nextEntity.done) {
@@ -425,8 +456,13 @@
 
                 that.movingPlatformsB2d.push(platformBody);
 
+                // var data = {
+                //     tileset: tileMap.tilesets[0],
+                //     tiles: tile.data.filter(function(value) { return value > 0; }),
+                //     type: colObj.type
+                // }
                 var data = {
-                    tileset: tileMap.tilesets[0],
+                    tilemap: tileMap,
                     tiles: tile.data.filter(function(value) { return value > 0; }),
                     type: colObj.type
                 }
@@ -669,7 +705,7 @@
         //data.y = body.GetPosition().y * this.SCALE;
 
         var powerUp;
-        switch(Math.floor(Math.random() * 3)) {
+        switch(Math.floor(Math.random() * 5)) {
             case 0:
                 powerUp = new MultiJumpPowerUp({
                     x: bodyDef.position.x,
@@ -684,6 +720,18 @@
                 break;
             case 2:
                 powerUp = new ShrinkPowerUp({
+                    x: bodyDef.position.x,
+                    y: bodyDef.position.y
+                });
+                break;
+            case 3:
+                powerUp = new SlowGravityPowerUp({
+                    x: bodyDef.position.x,
+                    y: bodyDef.position.y
+                });
+                break;
+            case 4:
+                powerUp = new PotatoOverloadPowerUp({
                     x: bodyDef.position.x,
                     y: bodyDef.position.y
                 });
@@ -737,6 +785,12 @@
             y: data.y,
             id: data.time
         });
+
+        console.log("Made a new Potato with id: " + data.time);
+
+        if (data.isMainPotato && this.mainPotato == null) {
+            this.mainPotato = potato;
+        }
 
         body.SetUserData({
             type: "POTATO",

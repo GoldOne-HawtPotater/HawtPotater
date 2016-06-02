@@ -10,6 +10,10 @@
 
 /* ------------ Body styles ------------ */
 
+.playerNotes {
+	margin: 10px;
+	font-weight: bold;
+}
 
 body {
 	background-color: #f0f1f3;
@@ -42,6 +46,12 @@ body {
 
 .keyLabel {
 	text-align: center;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #mobileControls {
@@ -190,7 +200,6 @@ body {
 /* ------ Home ------ */
 .homesection {
 	text-align:center;
-	margin-top:140px;
 }
 
 .node {
@@ -287,4 +296,24 @@ footer {
 	padding-top: 30px;
 	background-color: white;
 	height: 130px;
+}
+
+/* ----------- Controllers ------------- */
+#mJump {
+	background-image: url("../img/keyboard_keys/keyboard_key_up.png");
+}
+#mMoveLeft{
+	background-image: url("../img/keyboard_keys/keyboard_key_left.png");	
+}
+#mMoveRight{
+	background-image: url("../img/keyboard_keys/keyboard_key_right.png");
+}
+#mReady{
+	background-image: url("../img/keyboard_keys/keyboard_key_r.png");
+}
+#mAttack{
+	background-image: url("../img/keyboard_keys/keyboard_key_z.png");
+}
+#mDodge{
+	background-image: url("../img/keyboard_keys/keyboard_key_x.png");
 }

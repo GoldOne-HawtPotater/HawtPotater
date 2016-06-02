@@ -60,9 +60,12 @@
 
     // Moving platforms
     function MovingPlatform(x, y, data) {
-        this.tileset = data.tileset;
+        this.tilemap = data.tilemap;
+        this.tileset = this.tilemap.tilesets[0];
         this.tiles = data.tiles;
         var type = [];
+        // horizontal-200-1-0
+        // direction+distance+speed+delay
         if (data.type.indexOf('-') >= 0) {
             type = data.type.split('-');
             this.directionValue = -1;
@@ -71,10 +74,10 @@
             this.directionValue = 1;
         }
         this.direction = type[0];
-        this.offsetReset = type[1];
-        this.offset = type[1];
-        this.speed = (type.length > 3) ? type[2] : 1;
-        this.delay = (type.length > 4) ? type[3] : 0;
+        this.offset = parseInt(type[1]);
+        this.offsetReset = this.offset;
+        this.speed = (type.length > 3) ? parseInt(type[2]) : 1;
+        this.delay = (type.length > 4) ? parseFloat(type[3]) : 0;
         this.tileHeight = this.tileset.tileheight;
         this.tileWidth = this.tileset.tilewidth;
 
@@ -84,8 +87,8 @@
     MovingPlatform.prototype = new Entity();
     MovingPlatform.prototype.constructor = MovingPlatform;
 
-    MovingPlatform.prototype.update = function () {
-
+    MovingPlatform.prototype.update = function (clockTick) {
+        if (this.delay > 0) this.delay -= clockTick
     }
 
     MovingPlatform.prototype.draw = function (ctx) {
@@ -93,16 +96,44 @@
         var tileHeight = this.tileHeight;
         var tileWidth = this.tileWidth;
         var tileset = this.tileset;
+        var originalXPos = null, originalYPos = null;
 
-        for (var i = 0; i < this.tiles.length; i++) {
-            var xindex = (this.tiles[i]-1) % tileset.columns;
-            var yindex = Math.floor((this.tiles[i]-1) / tileset.columns);
-            ctx.drawImage(spriteSheet,
-                          xindex * tileWidth, yindex * tileHeight,  // source from sheet
-                          tileWidth, tileHeight,
-                          this.x + i * tileWidth - tileWidth*1.5, this.y - tileHeight/2,
-                          tileWidth, tileHeight
-                          );
+
+
+        // for (var i = 0; i < this.tiles.length; i++) {
+        //     var xindex = (this.tiles[i]-1) % tileset.columns;
+        //     var yindex = Math.floor((this.tiles[i]-1) / tileset.columns);
+        //     // ctx.drawImage(spriteSheet,
+        //     //               xindex * tileWidth, yindex * tileHeight,  // source from sheet
+        //     //               tileWidth, tileHeight,
+        //     //               this.x + i * tileWidth - tileWidth*1.5, this.y - tileHeight/2,
+        //     //               tileWidth, tileHeight
+        //     //               );
+        //     ctx.drawImage(spriteSheet,
+        //                   xindex * tileWidth, yindex * tileHeight,  // source from sheet
+        //                   tileWidth - 0.5, tileHeight - 0.5,
+        //                   this.x + i * tileWidth - tileWidth, this.y - tileHeight/2,
+        //                   tileWidth, tileHeight
+        //                   );
+        // }
+
+        for (var j = 0; j < this.tiles.length; j++) {
+            if (this.tiles[j] != 0) {
+                if (originalXPos == null && originalYPos == null) {
+                    originalXPos = (j % this.tilemap.width) * tileWidth;
+                    originalYPos = Math.floor(j / this.tilemap.width) * tileHeight;
+                }
+                var xindex = (this.tiles[j]-1) % tileset.columns;
+                var yindex = Math.floor((this.tiles[j]-1) / tileset.columns);
+                ctx.drawImage(  
+                    spriteSheet,
+                    xindex * tileWidth, yindex * tileHeight,  // source from sheet
+                    tileWidth - 0.5, tileHeight - 0.5,
+                    (j % this.tilemap.width) * tileWidth - (originalXPos - this.x) - tileWidth, 
+                    Math.floor(j / this.tilemap.width) * tileHeight - (originalYPos - this.y) - tileHeight/2, 
+                    tileWidth, tileHeight
+                );
+            }
         }
     }
 
@@ -142,6 +173,78 @@
         this.rotation = entity.rotation;
     }
 
+    /** Slow Gravity Power Up Class **/
+    var SlowGravityPowerUp = function (powerUpData) {
+        if (isClient) {
+            this.sprite = new Animation(('../img/powerups/slowgravity_powerup'), 1);
+        }
+        this.width = 64;
+        this.height = 64;
+        PowerUp.call(this, powerUpData.x, powerUpData.y);
+    }
+
+    SlowGravityPowerUp.prototype = new PowerUp();
+    SlowGravityPowerUp.prototype.constructor = SlowGravityPowerUp;
+
+    SlowGravityPowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    SlowGravityPowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    SlowGravityPowerUp.prototype.givePower = function (data) {
+        data.gameEngine.b2dWorld.SetGravity(new Box2D.Common.Math.b2Vec2(0, 4.5));
+        data.gameEngine.alteredGameWorld = true;
+        data.gameEngine.resetGameWorldTimer = Date.now() + 7500;
+        PowerUp.prototype.givePower.call(this);
+    }
+
+    SlowGravityPowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
+
+    /** Potato Overload Power Up Class **/
+    var PotatoOverloadPowerUp = function (powerUpData) {
+        if (isClient) {
+            this.sprite = new Animation(('../img/powerups/potatooverload_powerup'), 1);
+        }
+        this.width = 64;
+        this.height = 64;
+        PowerUp.call(this, powerUpData.x, powerUpData.y);
+    }
+
+    PotatoOverloadPowerUp.prototype = new PowerUp();
+    PotatoOverloadPowerUp.prototype.constructor = PotatoOverloadPowerUp;
+
+    PotatoOverloadPowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    PotatoOverloadPowerUp.prototype.draw = function (ctx, clockTick) {
+        // ctx, x, y, flipH, flipV
+        this.sprite.drawImage(ctx, this.x, this.y);
+    }
+
+    PotatoOverloadPowerUp.prototype.givePower = function (data) {
+        var numOfPotatos = 25;
+        var startingX;
+        var startingY;
+        for (var x = 0; x < numOfPotatos; x++) {
+            startingX = (data.gameEngine.platformPositionData.minX + (Math.floor(Math.random() * data.gameEngine.platformPositionData.maxX)));
+            startingY = 50;
+            data.gameEngine.potatoCreationQueue.push({ x: startingX, y: startingY, time: Date.now() + x, timeToDrop: Date.now() });
+        }
+        PowerUp.prototype.givePower.call(this);
+    }
+
+    PotatoOverloadPowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+        this.rotation = entity.rotation;
+    }
 
     /** Multi-Jump Power Up Class **/
     function MultiJumpPowerUp(powerUpData) {
@@ -464,13 +567,14 @@
     Potato.prototype.processCollision = function(data) {
         if (data.objectCollided.type == "PLAYER") {
             data.gameEngine.players.get(data.objectCollided.id).score += 1;
-        } else if (data.objectCollided.type == "PLATFORM" && this.y >= 100) {
+        } else if (data.objectCollided.type == "PLATFORM") {
             data.gameEngine.graveyard.push({ entityId: this.id });
 
             // Uncomment the following line to spawn a new potato in a random spot on respawn
             // data.gameEngine.potatoCreationQueue.push({ x: Math.random() * (1100 - 200) + 200, y: 25, time: Date.now(), timeToDrop: Date.now() + 3000 });
-            if (data.gameEngine.myGameState == data.gameEngine.gameStates.playing) {
-                data.gameEngine.potatoCreationQueue.push({ x: this.startingX, y: this.startingY, time: Date.now(), timeToDrop: Date.now() + 3000 });
+            if (data.gameEngine.myGameState == data.gameEngine.gameStates.playing && data.gameEngine.mainPotato == this) {
+                data.gameEngine.mainPotatoQueue = ({ x: this.startingX, y: this.startingY, time: -150, timeToDrop: Date.now() + 3000 });
+                data.gameEngine.mainPotato = null;
             }
         }
     }
@@ -480,6 +584,8 @@
     EntityCollection.MultiJumpPowerUp = MultiJumpPowerUp;
     EntityCollection.SizePowerUp = SizePowerUp; 
     EntityCollection.ShrinkPowerUp = ShrinkPowerUp;
+    EntityCollection.PotatoOverloadPowerUp = PotatoOverloadPowerUp;
+    EntityCollection.SlowGravityPowerUp = SlowGravityPowerUp;
     EntityCollection.HawtPlayer = HawtPlayer;
     EntityCollection.Background = Background;
     EntityCollection.Potato = Potato;
