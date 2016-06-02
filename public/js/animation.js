@@ -86,13 +86,20 @@ Animation.prototype.drawFrame = function (tick, ctx, x, y, flipH, flipV) {
     var scaleH = flipH ? flipH : 1, // Set horizontal scale to -1 if flip horizontal
         scaleV = flipV ? flipV : 1; // Set verical scale to -1 if flip vertical
 
-    if (scaleH < 0) x += image.width;
-    if (scaleV < 0) y += image.height;
-
+    if (scaleH < 0) {
+        x = x / scaleH - image.width;
+    } else {
+        x /= scaleH;
+    }
+    if (scaleV < 0) {
+        y = y / scaleV - image.height;
+    } else {
+        y /= scaleV;
+    }
     //ctx.scale(scaleH, scaleV);
     ctx.save();
     ctx.scale(scaleH, scaleV);
-    ctx.drawImage(image, x * scaleH, y * scaleV);
+    ctx.drawImage(image, x, y);
     ctx.restore();
 }
 

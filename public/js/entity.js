@@ -45,7 +45,7 @@
     
     /** Background **/
     function Background() {
-        Entity.call(this, -800, -700);
+        Entity.call(this, -500, -400);
     }
 
     Background.prototype = new Entity();
@@ -55,7 +55,7 @@
     }
 
     Background.prototype.draw = function(ctx) {
-        ctx.drawImage(ASSET_MANAGER.getAsset("../img/clouds_highres.png"), -500, -400/*-1100*/);
+        ctx.drawImage(ASSET_MANAGER.getAsset("../img/clouds_highres.png"), this.x, this.y);
     }
 
     // Moving platforms
@@ -144,7 +144,7 @@
 
 
     /** Multi-Jump Power Up Class **/
-    var MultiJumpPowerUp = function(powerUpData) {
+    function MultiJumpPowerUp(powerUpData) {
         if (isClient) {
             this.sprite = new Animation(('../img/powerups/jump'), 1);
         }
@@ -167,6 +167,7 @@
 
     MultiJumpPowerUp.prototype.givePower = function(data) {
         data.gameEngine.players.get(data.playerId).multiJumpCounter += 10;
+        //new Audio('../img/test.mp3').play();
         PowerUp.prototype.givePower.call(this);
     }
 
@@ -174,6 +175,63 @@
         Entity.prototype.syncEntity.call(entity);
         this.rotation = entity.rotation;
     }
+
+    /** Scale-up Power Up Class **/
+    function SizePowerUp(powerUpData) {
+        this.width = 64;
+        this.height = 64;
+        PowerUp.call(this, powerUpData.x, powerUpData.y);
+    }
+
+    SizePowerUp.prototype = new PowerUp();
+    SizePowerUp.prototype.constructor = SizePowerUp;
+
+    SizePowerUp.prototype.update = function() {
+        Entity.prototype.update.call(this);
+    }
+
+    SizePowerUp.prototype.draw = function(ctx) {
+        ctx.drawImage(ASSET_MANAGER.getAsset("../img/powerups/size.jpg"), this.x, this.y);
+    }
+
+    SizePowerUp.prototype.givePower = function(data) {
+        data.gameEngine.players.get(data.playerId).scale *= 1.3;
+        data.gameEngine.resetBody(data);
+        PowerUp.prototype.givePower.call(this);
+    }
+
+    SizePowerUp.prototype.syncEntity = function(entity) {
+        Entity.prototype.syncEntity.call(entity);
+    }
+
+    /** Scale-down Power Up Class **/
+    function ShrinkPowerUp(powerUpData) {
+        this.width = 64;
+        this.height = 64;
+        PowerUp.call(this, powerUpData.x, powerUpData.y);
+    }
+
+    ShrinkPowerUp.prototype = new PowerUp();
+    ShrinkPowerUp.prototype.constructor = ShrinkPowerUp;
+
+    ShrinkPowerUp.prototype.update = function () {
+        Entity.prototype.update.call(this);
+    }
+
+    ShrinkPowerUp.prototype.draw = function (ctx) {
+        ctx.drawImage(ASSET_MANAGER.getAsset("../img/powerups/shrink.jpg"), this.x, this.y);
+    }
+
+    ShrinkPowerUp.prototype.givePower = function (data) {
+        data.gameEngine.players.get(data.playerId).scale *= 0.7;
+        data.gameEngine.resetBody(data);
+        PowerUp.prototype.givePower.call(this);
+    }
+
+    ShrinkPowerUp.prototype.syncEntity = function (entity) {
+        Entity.prototype.syncEntity.call(entity);
+    }
+        
 
     /** Platforms **/
     function Platform(platformObj) {
@@ -195,7 +253,6 @@
 
     /** Hawt Potater Player Class **/
     var HawtPlayer = function(playerObj, width, height) {
-        // this.moveSpeed = 200;
         this.character = playerObj.character;
         this.isJumping = false;
         this.isMovingLeft = false;
@@ -206,12 +263,14 @@
         this.attackSteps = 0;
         this.dodgeDuration = 1000;
         this.canDodge = true;
-        this.dodgeResetTimer;
+        this.isDodging = false;
+        this.dodgeResetTimer = null;
         this.dodgeCooldownTimer;
         this.dodgeCooldown = 3000;
-        // this.moveSpeed = 200;
         this.width = playerObj.width;
         this.height = playerObj.height;
+        this.scale = playerObj.scale;
+        //this.moveSpeed = ;
         this.isReady = (playerObj && playerObj.isReady) ? playerObj.isReady : false;
         this.playerId = playerObj.playerId;
         Entity.call(this, playerObj.x, playerObj.y, playerObj.playerId);
@@ -253,11 +312,10 @@
             this.standingAnimation = new Animation(('../img/animals/dog/stand'), 15, 120, true);
             this.walkingAnimation = new Animation(('../img/animals/dog/move'), 6, 120, true);
             this.jumpingAnimation = new Animation(('../img/animals/dog/jump'), 4, 50, false);
+            //this.dodgingAnimation = new Animation(('../img/animals/dog/dodge'), 5, 80, false);
         }
         // playerObj.width = 83;
         // playerObj.height = 52;
-
-        this.body = playerObj.body;
 
         playerObj.character = EntityCollection.GameCharacters['HawtDogge'];
         HawtPlayer.call(this, playerObj);
@@ -276,13 +334,12 @@
         // if (this.isMovingLeft) direction = -1;
         // if (this.isMovingRight) direction = 1;
         if (this.isJumping) {
-            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else if (this.isMovingLeft || this.isMovingRight) {
-            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else {
-            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         }
-        // HawtPlayer.prototype.draw.call(this, ctx, clockTick);
     }
 
     var HawtSheep = function(playerObj) {
@@ -307,11 +364,11 @@
 
         // Play the correct animation
         if (this.isJumping) {
-            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else if (this.isMovingLeft || this.isMovingRight) {
-            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else {
-            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         }
     }
 
@@ -335,11 +392,11 @@
 
         // Play the correct animation
         if (this.isJumping) {
-            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else if (this.isMovingLeft || this.isMovingRight) {
-            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else {
-            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         }
     }
 
@@ -363,11 +420,11 @@
 
         // Play the correct animation
         if (this.isJumping) {
-            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1);
+            this.jumpingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else if (this.isMovingLeft || this.isMovingRight) {
-            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.walkingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         } else {
-            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction*-1);
+            this.standingAnimation.drawFrame(clockTick, ctx, this.x, this.y, this.direction * -1 * this.scale, this.scale);
         }
     }
 
@@ -421,6 +478,8 @@
     // Add entities to the collection.
     EntityCollection.Entity = Entity;
     EntityCollection.MultiJumpPowerUp = MultiJumpPowerUp;
+    EntityCollection.SizePowerUp = SizePowerUp; 
+    EntityCollection.ShrinkPowerUp = ShrinkPowerUp;
     EntityCollection.HawtPlayer = HawtPlayer;
     EntityCollection.Background = Background;
     EntityCollection.Potato = Potato;

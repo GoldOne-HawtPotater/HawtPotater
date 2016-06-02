@@ -14,7 +14,6 @@ module.exports = function(app,io){
 	});
 
 	app.get('/create', function(req,res){
-
 		// Generate unique id for the room
 		var id = Math.round((Math.random() * 1000000));
 

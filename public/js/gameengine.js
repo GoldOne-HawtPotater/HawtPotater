@@ -16,6 +16,8 @@
         Potato = EntityCollection.Potato,
         HawtDogge = EntityCollection.HawtDogge,
         MultiJumpPowerUp = EntityCollection.MultiJumpPowerUp,
+        SizePowerUp = EntityCollection.SizePowerUp,
+        ShrinkPowerUp = EntityCollection.ShrinkPowerUp,
         MovingPlatform = EntityCollection.MovingPlatform,
         HawtSheep = EntityCollection.HawtSheep,
         HawtChicken = EntityCollection.HawtChicken,
@@ -27,6 +29,8 @@
     /////////////////////////////////////////////////
     var GameEngine = function () {
         this.background = new Background();
+
+        this.newBodies = [];
 
         this.players = new Map();
         this.playersB2d = new Map();
@@ -73,6 +77,12 @@
         this.createListener(this.b2dWorld);
     };
 
+    GameEngine.prototype.changePlayerName = function(data) {
+        var player = this.players.get(data.playerId);
+        player.playerName = data.name;
+    };
+
+
     GameEngine.prototype.setGame = function (data) {
         console.log("Starting the game with map0" + data.mapNum);
         var that = this;
@@ -81,9 +91,12 @@
         // Reset players ready status and x,y positions
         this.resetPlayerPositions();
 
-        // reset player scores
+        // reset player scores and dodge ability
         this.players.forEach(function(player) {
             player.score = 0;
+            player.canDodge = true;
+            player.dodgeCooldownTimer = null;
+            player.isDodging = false;
         });    
 
         // Create the platforms for the given map.
@@ -120,6 +133,7 @@
     };
 
     GameEngine.prototype.update = function () {
+        var that = this;
         this.clockTick = this.timer.tick();
         /** Update the b2dWorld **/
         this.b2dWorld.Step(
@@ -127,6 +141,16 @@
             ,  10       //velocity iterations
             ,  10       //position iterations
         );
+
+        // Add new bodies
+        for (var i = 0; i < this.newBodies.length; i++) {
+            var data = this.newBodies[i];
+            var player = this.players.get(data.playerId);
+            var playerBody = this.playersB2d.get(data.playerId);
+            this.b2dWorld.DestroyBody(playerBody);
+            this.addPlayer(player);
+        }
+        this.newBodies = [];
 
         /** Removes Entities from the world that need to be removed **/
         for (var x = 0; x < this.graveyard.length; x++) {
@@ -150,7 +174,6 @@
         // We "reset" the queue so that we never have any null elements while checking the time in gameWorld
         this.potatoCreationQueue = potatosNotReady;
 
-        var that = this;
         /** Update the moving platforms **/
         if (this.myGameState == this.gameStates['playing']){
             for (var i = 0; i < that.movingPlatforms.length; i++) {
@@ -193,7 +216,7 @@
                 // Cap the velocity at 5
                 if (velocity.x > 5) {
                     velocity.x = 5;
-                } else if (velocity.y > 1) {
+                } else if (velocity.y > 5) {
                     velocity.y = 5;
                 }
             }
@@ -243,6 +266,8 @@
 
                 // We reset the dodgeTimer to null
                 player.dodgeResetTimer = null;
+
+                player.isDodging = false;
             }
 
             // Reset the players ability to dodge if the cooldown is over
@@ -252,8 +277,8 @@
             }
 
             // Update player x y values based on box2d position
-            player.x = body.GetPosition().x * that.SCALE - player.width / 2;
-            player.y = body.GetPosition().y * that.SCALE - player.height / 2;
+            player.x = body.GetPosition().x * that.SCALE - player.width * player.scale / 2;
+            player.y = body.GetPosition().y * that.SCALE - player.height * player.scale / 2;
 
             // if (vel.y != 0 || vel.x != 0) console.log(Date.now() / 1000 / 60 + ' - The x,y is (' + player.x + ',' + player.y + ')');
         });
@@ -274,6 +299,12 @@
             this.players.forEach(function(player) {
                 player.isReady = false;
                 player.multiJumpCounter = 0;
+                player.scale = 1;
+                player.canDodge = true;
+                player.dodgeCooldownTimer = null;
+                player.isDodging = false;
+                that.resetBody(player);
+                
             }); 
             that.platformPositionData = null;
             this.createPlatforms({});
@@ -495,10 +526,11 @@
             data.width = 67;
             data.height = 61;
         }
+        data.scale = data.scale ? data.scale : 1;
         fixDef.shape.SetAsBox(
-            data.width / 2 / this.SCALE,
-            data.height / 2 / this.SCALE
-            );
+            data.width * data.scale / 2 / this.SCALE,
+            data.height * data.scale / 2 / this.SCALE
+        );
         fixDef.friction = 0;
         fixDef.restitution = 0.2;
         // I am a... 
@@ -511,16 +543,17 @@
         // create dynamic body
         if (data.x && data.y && data.width && data.height) {
             // If we're passing 
-            bodyDef.position.x = data.x / this.SCALE + (data.width / this.SCALE / 2);
-            bodyDef.position.y = data.y / this.SCALE + (data.height / this.SCALE / 2);
+            bodyDef.position.x = data.x / this.SCALE + (data.width * data.scale / this.SCALE / 2);
+            bodyDef.position.y = data.y / this.SCALE + (data.height * data.scale / this.SCALE / 2);
         } else {
             bodyDef.position.x = 400 / this.SCALE;
             bodyDef.position.y = 50 / this.SCALE;
         }
+
         var body = this.b2dWorld.CreateBody(bodyDef);
         body.SetSleepingAllowed(false);
 
-        // Add the fixture
+        // Add the fixture 
         body.CreateFixture(fixDef);
 
         // Set the data to be stored by the object for collisions 
@@ -557,9 +590,11 @@
         } else {
             this.players.get(data.playerId).playerNum = this.players.size;
         }
+
+        this.players.get(data.playerId).playerName = data.playerName
     };
 
-    GameEngine.prototype.switchCharacter = function (data) {
+    GameEngine.prototype.switchCharacter = function(data) {
         if (data) {
             var player = this.players.get(data.playerId);
             var playerBody = this.playersB2d.get(data.playerId);
@@ -569,7 +604,13 @@
         }
     };
 
-    GameEngine.prototype.removePlayer = function (data) {
+    GameEngine.prototype.resetBody = function(data) {
+        if (data) {
+            this.newBodies.push(data);
+        }
+    };
+
+    GameEngine.prototype.removePlayer = function(data) {
         // remove the player from the player map
         this.players.delete(data.playerId);
 
@@ -627,10 +668,27 @@
         //data.x = body.GetPosition().x * this.SCALE;
         //data.y = body.GetPosition().y * this.SCALE;
 
-        var powerUp = new MultiJumpPowerUp({
-            x: bodyDef.position.x,
-            y: bodyDef.position.y
-        });
+        var powerUp;
+        switch(Math.floor(Math.random() * 3)) {
+            case 0:
+                powerUp = new MultiJumpPowerUp({
+                    x: bodyDef.position.x,
+                    y: bodyDef.position.y
+                });
+                break;
+            case 1:
+                powerUp = new SizePowerUp({
+                    x: bodyDef.position.x,
+                    y: bodyDef.position.y
+                });
+                break;
+            case 2:
+                powerUp = new ShrinkPowerUp({
+                    x: bodyDef.position.x,
+                    y: bodyDef.position.y
+                });
+                break;
+        }
 
         // Set the data to be stored by the object for collisions
         body.SetUserData({
@@ -716,6 +774,7 @@
                 player.dodgeResetTimer = Date.now() + player.dodgeDuration;
                 player.dodgeCooldownTimer = Date.now() + player.dodgeCooldown;
                 player.canDodge = false;
+                player.isDodging = true;
             }
         }
     };
@@ -760,13 +819,15 @@
         // console.log(data.playerId + ' is moving ' + data.direction + '.');
         if (data && data.direction) {
             var player = this.players.get(data.playerId);
-            switch(data.direction) {
-                case 37: //left
-                    player.isMovingLeft = data.value;
-                    break;
-                case 39: //right
-                    player.isMovingRight = data.value;
-                    break;
+            if (!player.stunned) {
+                switch (data.direction) {
+                    case 37: //left
+                        player.isMovingLeft = data.value;
+                        break;
+                    case 39: //right
+                        player.isMovingRight = data.value;
+                        break;
+                }
             }
         }
     };

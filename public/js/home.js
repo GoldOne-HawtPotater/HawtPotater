@@ -14,6 +14,15 @@ $(function(){
     	socket.emit("getGameList");
     }, 2000);
 
+
+    //document.getElementById("create").addEventListener("click", function (ele) {
+    //    //socket.emit("receiveName", document.getElementById("namebox").value);
+    //});
+
+    //document.getElementById("gameListContainer").addEventListener("click", function () {
+    //    socket.emit("receiveName", document.getElementById("namebox").value);
+    //});
+
     socket.on("receiveGameList", function(data) {
     	var count = 0;
     	var container = $("#gameListContainer");
@@ -22,7 +31,8 @@ $(function(){
 			var playingList = [];
     		for (var key in data) {
     			count++;
-    			// console.log("Room #" + key + " has " + data[key].size + " players.\n Game state: " + gameStates[data[key].gameState]);
+    		    // 
+    			("Room #" + key + " has " + data[key].size + " players.\n Game state: " + gameStates[data[key].gameState]);
     			var linkToGame = $("<a>");
     			var gameDiv = $("<div>");
     			var roomDiv = $("<div>");
@@ -38,7 +48,7 @@ $(function(){
     			sizeDiv.addClass("joinInfo").addClass("joinSize");
     			statusDiv.addClass("joinInfo").addClass("joinStatus");
 
-    			linkToGame.attr("href", "/game/"+key);
+    			linkToGame.attr("href", "/game/" + key);
 
     			linkToGame.append(gameDiv.append(roomDiv)
     				.append(sizeDiv)

@@ -27,7 +27,12 @@
         <p><strong>How to start:</strong> The game will start when everyone is ready (press R if you're ready).</p>
         <p><strong>GAME GOAL:</strong> Gain the hightest score by touching the potato as many times as you can!</p>
         <p><em>Potato</em> will disappear if it hits the ground!</p>
-        <p><em>Power ups</em> give you the ability to do multi-jump!</p>
+        <p><em>Power ups</em> give you special abilities!</p>
+    </header>
+
+    <header class="nameboxclass">
+        <h1 class="nameboxtext">Enter your name: </h1>
+        <input type="text" id="namebox">
     </header>
 
         <section id="sectionControls">
@@ -69,6 +74,10 @@
                 <div class="mobileKeyContainer">
                     <div class="halfKey"></div>
                     <div class="gameKeys">
+                        <img src="../img/keyboard_keys/keyboard_key_q.png">
+                        <div class="keyLabel">Switch Character (before Ready)</div>
+                    </div>
+                    <div class="gameKeys">
                         <img src="../img/keyboard_keys/keyboard_key_up.png">
                         <div class="keyLabel">Jump</div>
                     </div>
@@ -101,10 +110,10 @@
 
         </section>
 
-    <section id="sectionCanvas">
-        <canvas id="gameWorldCanvas" width="1280" height="720" style="border: 1px solid brown; background: white"></canvas>
-        <!-- <canvas id="gameWorldCanvas" width="2000" height="1000" style="border: 1px solid brown; background: white"></canvas> -->
-    </section>
+        <section id="sectionCanvas">
+            <canvas id="gameWorldCanvas" width="1280" height="720" style="border: 1px solid brown; background: white"></canvas>
+            <!-- <canvas id="gameWorldCanvas" width="2000" height="1000" style="border: 1px solid brown; background: white"></canvas> -->
+        </section>
 
 
         <script src="../js/jquery.min.js"></script>

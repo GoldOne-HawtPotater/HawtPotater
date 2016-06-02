@@ -6,6 +6,8 @@ $(function(){
         return check;
     }
 
+    var that = this;
+
     // connect to the socket
     var socket = io();
     
@@ -23,11 +25,28 @@ $(function(){
     // The user player id
     var myPlayerId;
 
+    var myPlayerName = "";    
+
     // A flag to see if you are the room master
     var roomMaster = false;
 
-    var that = this;
 
+    var nameBox = document.getElementById("namebox");
+
+
+    //// doesn't work
+    //namebox.addEventListener("focus", function () {
+    //    window.blur();
+    //});
+        
+    nameBox.addEventListener("input", function () {
+        var data = {
+            theFunc: 'changePlayerName',
+            name: document.getElementById("namebox").value,
+            playerId: myPlayerId
+        };
+        socket.emit('server_update', data);
+    });
 
     function startInput() {
         console.log('Starting input');
@@ -45,6 +64,7 @@ $(function(){
                 return false;
             }
         });
+	
 
         gamescreen.keydown(function(e) {
            var key = e.which;
@@ -118,7 +138,7 @@ $(function(){
                         playerId: myPlayerId
                     };
                     socket.emit('server_update', data);
-                    break
+                    break;
                 case 81: // q
                     data = {
                         theFunc: 'switchCharacter',
@@ -167,6 +187,8 @@ $(function(){
             ASSET_MANAGER.queueDownload("../img/new_potato.png");
             //ASSET_MANAGER.queueDownload("../img/arrow.png");
             ASSET_MANAGER.queueDownload("../img/powerups/jump.png");
+            ASSET_MANAGER.queueDownload("../img/powerups/size.jpg"); 
+            ASSET_MANAGER.queueDownload("../img/powerups/shrink.jpg");
             ASSET_MANAGER.queueDownload("../img/platforms/map_spritesheet_01.png");
 
             // Dog
@@ -182,6 +204,10 @@ $(function(){
             for (var i = 0; i < numberOfFrames; i++) {
                 ASSET_MANAGER.queueDownload('../img/animals/dog/jump_' + i + '.png');
             }
+            //numberOfFrames = 5;
+            //for (var i = 0; i < numberOfFrames; i++) {
+            //    ASSET_MANAGER.queueDownload('../img/animals/dog/dodge_' + i + '.png');
+            //}
 
             //ASSET_MANAGER.queueDownload('../img/animals/dog/jump_0.png');
 
@@ -242,7 +268,8 @@ $(function(){
             var data = {
                 theFunc: 'addPlayer',
                 roomId: roomId,
-                playerId: myPlayerId
+                playerId: myPlayerId,
+                playerName: myPlayerName
             };
 
             gameworld.gameEngine.addPlayer(data);

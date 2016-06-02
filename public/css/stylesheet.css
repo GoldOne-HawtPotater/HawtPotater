@@ -28,7 +28,7 @@ body {
 }
 
 #sectionControls {
-	width: 1280px;
+	width: 1408px;
 	border: solid 3px black;
 	border-radius: 10px;
 	background-color: white;
@@ -164,6 +164,23 @@ body {
 	font-size:30px;
 }
 
+.nameboxclass{
+	text-align:center;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-size:20px;
+    margin-top:20px;
+}
+
+.nameboxtext {
+    display:inline;
+}
+
+#namebox{
+    width:300px;
+	text-align:center;
+    font-size:30px;
+}
+
 
 
 /* ------------ Section styles ------------ */
@@ -203,9 +220,10 @@ body {
 	border-radius: 3px;
 	box-shadow: 0px 5px 5px #e4e8e7;
 	text-decoration: none;
-	margin-bottom: 70px;
+	margin-bottom: 50px;
 	color: #eeffff;
 }
+
 #join {
 	margin-bottom: 0px;
 }
