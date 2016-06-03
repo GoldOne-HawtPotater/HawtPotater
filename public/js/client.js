@@ -373,7 +373,7 @@ $(function(){
     };
 
     socket.on('setcontroller', function(data) {
-        if (true || mobilecheck()) {
+        if (mobilecheck()) {
             enableMobileControls();
             $(".instruction").hide();
             $("#mobileControls").show();
