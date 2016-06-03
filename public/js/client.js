@@ -33,15 +33,6 @@ $(function(){
 
     var nameBox = document.getElementById("namebox");
 
-    nameBox.addEventListener("input", function () {
-        var data = {
-            theFunc: 'changePlayerName',
-            name: document.getElementById("namebox").value,
-            playerId: myPlayerId
-        };
-        socket.emit('server_update', data);
-    });
-
     function startInput() {
         console.log('Starting input');
         /** Set up the key listeners **/
@@ -273,6 +264,15 @@ $(function(){
             socket.emit('joingameroom', data);
             // Add the player to our own gameworld
             console.log('This browser id is ' + data.playerId);
+
+            nameBox.addEventListener("input", function () {
+                var data = {
+                    theFunc: 'changePlayerName',
+                    name: document.getElementById("namebox").value,
+                    playerId: myPlayerId
+                };
+                socket.emit('server_update', data);
+            });
         });
     });
 
@@ -311,6 +311,14 @@ $(function(){
             if (player.GetLinearVelocity().y == 0 || (player.GetLinearVelocity().y != 0 && playerEnt.multiJumpCounter > 0)) {
                 socket.emit('server_update', data);
             }
+        });
+
+        // Setup Change Character
+        $("#mChangeCharacter")[0].addEventListener("touchstart", function () {
+            socket.emit('server_update', {
+                theFunc: 'switchCharacter',
+                playerId: myPlayerId
+            });
         });
 
         // Setup Ready

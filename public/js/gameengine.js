@@ -633,10 +633,12 @@
     GameEngine.prototype.switchCharacter = function(data) {
         if (data) {
             var player = this.players.get(data.playerId);
-            var playerBody = this.playersB2d.get(data.playerId);
-            this.b2dWorld.DestroyBody(playerBody);
-            player.switchCharacter();
-            this.addPlayer(player);
+            if (player.canDodge) {
+                var playerBody = this.playersB2d.get(data.playerId);
+                this.b2dWorld.DestroyBody(playerBody);
+                player.switchCharacter();
+                this.addPlayer(player);
+            }
         }
     };
 

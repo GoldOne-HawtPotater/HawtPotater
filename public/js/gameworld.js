@@ -214,7 +214,7 @@ $(function(){
             if (player.multiJumpCounter > 0) {
                 that.ctx.font = "12px Comic Sans MS";
                 that.ctx.fillStyle = "#0000ff";
-                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 40);
+                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 43);
             }
 
             // Draw the dodge duration timer
@@ -222,7 +222,7 @@ $(function(){
                 that.ctx.font = "12px Comic Sans MS";
                 that.ctx.fillStyle = "#000000";
                 var timeRemaining = Math.ceil((player.dodgeResetTimer - Date.now()) / 100) / 10;
-                that.ctx.fillText("Dodging: " + timeRemaining, player.x, player.y - 30);
+                that.ctx.fillText("Dodging: " + timeRemaining, player.x, player.y - 33);
             }
             // Draw dodge cooldown timer
             if (player.dodgeCooldownTimer != null && !player.canDodge) {
