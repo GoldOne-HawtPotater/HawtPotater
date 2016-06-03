@@ -33,12 +33,6 @@ $(function(){
 
     var nameBox = document.getElementById("namebox");
 
-
-    //// doesn't work
-    //namebox.addEventListener("focus", function () {
-    //    window.blur();
-    //});
-        
     nameBox.addEventListener("input", function () {
         var data = {
             theFunc: 'changePlayerName',
@@ -52,7 +46,7 @@ $(function(){
         console.log('Starting input');
         /** Set up the key listeners **/
         $('#gameWorldCanvas').attr("tabindex", "0").focus();
-        var gamescreen = $(window);
+        var gamescreen = $("#gameWorldCanvas");
 
         // Disable scroll keys
         var keys = {37: 1, 38: 1, 39: 1, 40: 1, 32: 1};
@@ -144,9 +138,9 @@ $(function(){
                         theFunc: 'switchCharacter',
                         playerId: myPlayerId
                     }
-                    if (!gameworld.gameEngine.players.get(myPlayerId).isReady) {
+                    //if (!gameworld.gameEngine.players.get(myPlayerId).isReady) {
                         socket.emit('server_update', data);
-                    }
+                    //}
                     break;
            }
         });

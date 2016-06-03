@@ -207,14 +207,14 @@ $(function(){
             that.ctx.strokeText(name + ": " + player.score, position.x, position.y);
 
             // Draw player name
-            that.ctx.fillText(name, player.x, player.y - 50);
-            that.ctx.strokeText(name, player.x, player.y - 50);
+            that.ctx.fillText(name, player.x, player.y - 60);
+            that.ctx.strokeText(name, player.x, player.y - 60);
 
             // Draw Multi Jump Power Up Status
             if (player.multiJumpCounter > 0) {
                 that.ctx.font = "12px Comic Sans MS";
                 that.ctx.fillStyle = "#0000ff";
-                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 32);
+                that.ctx.fillText("Multi-Jumps: " + player.multiJumpCounter, player.x, player.y - 40);
             }
 
             // Draw the dodge duration timer
@@ -222,7 +222,7 @@ $(function(){
                 that.ctx.font = "12px Comic Sans MS";
                 that.ctx.fillStyle = "#000000";
                 var timeRemaining = Math.ceil((player.dodgeResetTimer - Date.now()) / 100) / 10;
-                that.ctx.fillText("Dodging: " + timeRemaining, player.x, player.y - 33);
+                that.ctx.fillText("Dodging: " + timeRemaining, player.x, player.y - 30);
             }
             // Draw dodge cooldown timer
             if (player.dodgeCooldownTimer != null && !player.canDodge) {

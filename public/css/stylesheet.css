@@ -32,7 +32,7 @@ body {
 }
 
 #sectionControls {
-	width: 1408px;
+	width: 1350px;
 	border: solid 3px black;
 	border-radius: 10px;
 	background-color: white;
@@ -61,7 +61,6 @@ body {
 
 .mobileKeyContainer {
 	display: block;
-	text-align: left;
 }
 
 #mobileContainer {
@@ -73,7 +72,8 @@ body {
 }
 
 .gameKeys {
-	display: inline-block;
+	display: inline-table;
+    vertical-align:auto;
 	width: 128px;
 	height: 128px;
 }
@@ -316,4 +316,7 @@ footer {
 }
 #mDodge{
 	background-image: url("../img/keyboard_keys/keyboard_key_x.png");
+}
+#mChangeCharacter{
+	background-image: url("../img/keyboard_keys/keyboard_key_q.png");
 }

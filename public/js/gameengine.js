@@ -97,12 +97,14 @@
         // Reset players ready status and x,y positions
         this.resetPlayerPositions();
 
-        // reset player scores and dodge ability
+        // reset player
         this.players.forEach(function(player) {
             player.score = 0;
             player.canDodge = true;
             player.dodgeCooldownTimer = null;
             player.isDodging = false;
+            player.scale = 1;
+            that.resetBody(player);
         });    
 
         // Create the platforms for the given map.
@@ -330,11 +332,9 @@
             this.players.forEach(function(player) {
                 player.isReady = false;
                 player.multiJumpCounter = 0;
-                player.scale = 1;
                 player.canDodge = true;
                 player.dodgeCooldownTimer = null;
                 player.isDodging = false;
-                that.resetBody(player);
                 
             }); 
             that.platformPositionData = null;
